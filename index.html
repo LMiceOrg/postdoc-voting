@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="assert/css/metro-all.min.css">
+  </head>
+  <body>
+    <h1 class="text-center">Metro 4</h1>
+    <h3 class="text-center">The Components Library</h3>
+    <div data-role="cube"></div>
+
+    <div id="holder">
+      Drag your file here
+    </div>
+    <!-- All of the Node.js APIs are available in this renderer process. -->
+    We are using Node.js <script>document.write(process.versions.node)</script>,<br>
+    Chromium <script>document.write(process.versions.chrome)</script>,<br>
+    and Electron <script>document.write(process.versions.electron)</script>.<br>
+    <div id="context" />
+    <!--script>
+      // You can also require other files to run in this process
+      require('./renderer.js')
+    </script-->
+
+<script>
+  document.addEventListener('drop', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    for (let f of e.dataTransfer.files) {
+      console.log('File(s) you dragged here: ', f.path);
+      document.getElementById("holder").innerHTML = "<br>file:"+f.path;
+    }
+  });
+  document.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+</script>
+
+    <script src="assert/js/metro.min.js"></script>
+  </body>
+</html>
+
