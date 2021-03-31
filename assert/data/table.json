@@ -1,0 +1,48 @@
+{
+  "header": [
+    {
+      "name": "id",
+      "title": "序号",
+      "size": 100,
+      "sortable": true,
+      "sortDir": "asc",
+      "format": "number"
+    },
+    {
+      "name": "name",
+      "title": "专家姓名",
+      "size": 200,
+      "sortable": true
+    },
+    {
+      "name": "vote_done",
+      "title": "已投票数量",
+      "sortable": true,
+      "size": 150,
+      "show": true
+    },
+    {
+      "name": "vote_notyet",
+      "title": "未投票数量",
+      "sortable": true,
+      "size": 150,
+      "show": true
+    },
+    {
+      "name": "status",
+      "title": "投票状态",
+      "sortable": true,
+      "size": 150,
+      "show": true
+    }
+  ],
+  "data": [
+    [
+      1,
+      "未开始投票",
+      0,
+      0,
+      "未开始"
+    ]
+  ]
+}
