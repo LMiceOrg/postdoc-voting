@@ -1,0 +1,58 @@
+$def with(page)
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="assert/css/metro-all.4.4.3.css">
+$if hasattr(page, 'extracss'):
+    $for css in page.extracss:
+        <link rel="stylesheet" type="text/css" href="$:(css)" >
+    $#end-for
+$#end-if
+    <style>
+.navview .navview-pane {
+    background-color: #ececec;
+  color: #141a1d;
+  font-size: 18px;
+}
+
+.navview .navview-menu {
+  background-color: #ececec;
+}
+.navview .navview-menu li a:hover {
+  color: #fff;
+  background: #cecece;
+}
+
+.navview.compacted .pull-button + h3 {
+  display: none;
+}
+.navview.expand .pull-button + h3,
+.navview-pane.open .pull-button + h3 {
+  display: flex;
+}
+
+
+    </style>
+  </head>
+
+$if hasattr(page, 'bodyattr'):
+    <body $:(page.bodyattr)>
+$else:
+    <body>
+$#
+
+$:page
+
+
+$#<!-- Latest compiled and minified JavaScript -->
+<script src="assert/js/metro.4.4.3.js"></script>
+$if hasattr(page, 'extrajs'):
+    $for js in page.extrajs:
+        <script src="$:(js)"></script>
+    $#end-for
+$#end-if
+
+</body>
+</html>

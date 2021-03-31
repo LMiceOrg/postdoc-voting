@@ -1,0 +1,226 @@
+$def with (*a, **kw)
+$#var bodyattr= 'class="m4-cloak h-vh-100"'
+$var extrajs = ['assert/js/Chart.min.js', 'assert/js/webvoting.js']
+$var extracss =['assert/css/Chart.min.css',]
+
+
+<div class="app-bar pos-relative z-dropdown bg-darkCyan" data-role="appbar" data-expand-point="md">
+    <a href="#" class="brand no-hover bg-white" id="voting_logo">
+        <img src="assert/img/pku.png" width="64">
+    </a>
+    <div class="app-bar-item ml-auto">
+        <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+    </div>
+    <a href="#" class="app-bar-item ml-auto">
+        <span id="voting_pro_name" class="mif-user fg-white"></span>
+    </a>
+</div>
+
+<div class="d-flex flex-justify-center flex-align-center p-1 m-3">
+    <div class="row">
+        <div class="cell-lg-4">
+            <div class="p-2 clear">
+                <div class="tiles-grid tiles-group size-2">
+
+                    <a href="voting.html" data-role="tile" class="bg-indigo">
+                        <span class="mif-chart-bars icon"></span>
+                        <span class="branding-bar">继续投票</span>
+                    </a>
+                    <a href="logout.html" data-role="tile" class="bg-orange">
+                        <span class="mif-user-minus icon"></span>
+                        <span class="branding-bar">退出登录</span>
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="m-3">
+        <div class="row mt-2">
+            <div class="cell-lg-2 cell-sm-6 mt-2">
+                <div class="icon-box border bd-cyan">
+                    <div class="icon bg-lime fg-white"><span class="mif-play"></span></div>
+                    <div class="content p-4">
+                        <div class="text-upper">投票状态</div>
+                        <div id="voting_status" class="text-upper text-bold text-lead">状态</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cell-lg-2 cell-sm-6 mt-2">
+                <div class="icon-box border bd-cyan">
+                    <div class="icon bg-cyan fg-white"><span class="mif-users"></span></div>
+                    <div class="content p-4">
+                        <div class="text-upper">专家总人数</div>
+                        <div id="pro_count" class="text-upper text-bold text-lead">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cell-lg-2 cell-sm-6 mt-2">
+                <div class="icon-box border bd-red">
+                    <div class="icon bg-red fg-white"><span class="mif-organization"></span></div>
+                    <div class="content p-4">
+                        <div class="text-upper">博士后总人数</div>
+                        <div id="phd_count" class="text-upper text-bold text-lead">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cell-lg-3 cell-sm-6 mt-2">
+                <div class="icon-box border bd-green">
+                    <div class="icon bg-green fg-white"><span class="mif-list-numbered"></span></div>
+                    <div class="content p-4">
+                        <div class="text-upper">总投票数</div>
+                        <div id="total_voting" class="text-upper text-bold text-lead">1024</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cell-lg-3 cell-sm-6 mt-2">
+                <div class="icon-box border bd-orange">
+                    <div class="icon bg-orange fg-white"><span class="mif-insert-template"></span></div>
+                    <div class="content p-4">
+                        <div class="text-upper">剩余投票数</div>
+                        <div id="remain_voting" class="text-upper text-bold text-lead">3,300</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="cell-lg-3 cell-md-6 mt-2">
+                <div class="more-info-box bg-cyan fg-white">
+                    <div class="content">
+                        <h2 id="vote_yes" class="text-bold mb-0">150</h2>
+                        <div>同意票</div>
+                    </div>
+                    <div class="icon">
+                        <span class="mif-user-check"></span>
+                    </div>
+                    <div class="more"> <span class="mif-organization"></span></div>
+                </div>
+            </div>
+            <div class="cell-lg-3 cell-md-6 mt-2">
+                <div class="more-info-box bg-green fg-white">
+                    <div class="content">
+                        <h2 id="vote_yes_rate" class="text-bold mb-0">53%</h2>
+                        <div>同意率</div>
+                    </div>
+                    <div class="icon">
+                        <span class="mif-chart-bars"></span>
+                    </div>
+                    <div class="more">  <span class="mif-organization"></span></div>
+                </div>
+            </div>
+            <div class="cell-lg-3 cell-md-6 mt-2">
+                <div class="more-info-box bg-orange fg-white">
+                    <div class="content">
+                        <h2 id="vote_no" class="text-bold mb-0">44</h2>
+                        <div>不同意票</div>
+                    </div>
+                    <div class="icon">
+                        <span class="mif-user-minus"></span>
+                    </div>
+                    <a href="#" class="more">  <span class="mif-organization"></span></a>
+                </div>
+            </div>
+            <div class="cell-lg-3 cell-md-6 mt-2">
+                <div class="more-info-box bg-red fg-white">
+                    <div class="content">
+                        <h2 id="vote_no_rate" class="text-bold mb-0">10%</h2>
+                        <div>不同意率</div>
+                    </div>
+                    <div class="icon">
+                        <span class="mif-chart-bars"></span>
+                    </div>
+                    <a href="#" class="more"> <span class="mif-organization"></span></a>
+                </div>
+            </div>
+        </div>
+
+        <div data-role="panel" data-title-caption="投票进度报告" data-collapsible="true" data-title-icon="<span class='mif-chart-line'></span>" class="mt-4">
+            <div class="row">
+                <div class="cell-md-6 p-10">
+                    <h5 class="text-center">专家投票进度</h5>
+                    <canvas id="pro_dashboard"></canvas>
+                </div>
+                <div class="cell-md-6 p-10">
+                    <h5 class="text-center">博士后得票情况</h5>
+                    <canvas id="phd_dashboard"></canvas>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <div class="cell-lg-3 cell-sm-6 text-center mt-4">
+                    <div class="fg-green"><span class="mif-play"></span></div>
+                    <div id="time_start" class="text-bold">11:20:01</div>
+                    <div class="text-upper">投票开始时间</div>
+                </div>
+                <div class="cell-lg-3 cell-sm-6 text-center mt-4">
+                    <div class="fg-orange"><span class="mif-alarm">=</span></div>
+                    <div id="time_now" class="text-bold">12:11:12</div>
+                    <div class="text-upper">当前时间</div>
+                </div>
+                <div class="cell-lg-3 cell-sm-6 text-center mt-4">
+                    <div class="fg-green"><span class="mif-reply"></span></div>
+                    <div id="time_duration" class="text-bold">00:55:01</div>
+                    <div class="text-upper">总耗时</div>
+                </div>
+                <div class="cell-lg-3 cell-sm-6 text-center mt-4">
+                    <div class="fg-red"><span class="mif-stop"></span></div>
+                    <div id="time_remain" class="text-bold">12:22:01</div>
+                    <div class="text-upper">预计剩余时间</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="cell-md-7">
+                <div data-role="panel" data-title-caption="专家列表" data-collapsible="true" data-title-icon="<span class='mif-table'></span>" class="mt-4">
+                    <div class="p-4">
+                        <table id="pro_table" class="table striped table-border mt-4"
+                               data-role="table"
+                               data-cls-table-top="row"
+                               data-cls-search="cell-md-6"
+                               data-cls-rows-count="cell-md-6"
+                               data-rows="5"
+                               data-rows-steps="5, 10"
+                               data-show-activity="false"
+                               data-horizontal-scroll="true"
+                        >
+                            <thead>
+                            <tr>
+                                <th data-name="id" >ID</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cell-md-5">
+                <div data-role="panel" data-title-caption="博士后列表" data-collapsible="true" data-title-icon="<span class='mif-table'></span>" class="mt-4">
+                    <div class="p-4">
+                        <table id="phd_table" class="table striped table-border mt-4"
+                               data-role="table"
+                               data-cls-table-top="row"
+                               data-cls-search="cell-md-6"
+                               data-cls-rows-count="cell-md-6"
+                               data-rows="5"
+                               data-rows-steps="5, 10"
+                               data-show-activity="false"
+                               data-horizontal-scroll="true"
+                        >
+                            <thead>
+                            <tr>
+                                <th data-name="id" >ID</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>

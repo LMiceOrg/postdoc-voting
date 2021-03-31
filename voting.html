@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="assert/css/metro-all.min.css">
+    <style>
+
+    </style>
+  </head>
+  <body>
+
+    <div class="app-bar pos-relative z-dropdown bg-darkCyan m-0 p-0" data-role="appbar" data-expand-point="md">
+      <a href="#" class="brand no-hover bg-white" id="voting_logo">
+          <img src="assert/img/pku.png" width="64">
+      </a>
+      <div class="app-bar-item ml-auto">
+          <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+      </div>
+      <a href="#" class="app-bar-item ml-auto">
+          <span id="voting_pro_name" class="mif-user fg-white">管理员</span>
+      </a>
+  </div>
+
+    <div class="cell-md-8 d-flex flex-justify-left flex-justify-end-md flex-align-center">
+      <ul class="breadcrumbs">
+        <li class="page-item">
+          <a href="index.html"><span class="mif-home icon fg-blue"></span> 返回 </a>
+        </li>
+        <li class="page-item">
+          <span class="mif-chrome icon fg-orange"></span>
+          <span class="branding-bar">发起投票</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="d-flex flex-justify-center flex-align-center p-1 m-3">
+      <div class="row">
+        <div class="cell-lg-4">
+          <div class="p-2 clear">
+            <div class="tiles-grid tiles-group size-4">
+
+                <div id="pro_excel" data-role="tile" class="bg-cyan" data-effect="hover-zoom-down">
+                    <div class="slide-front" >
+                      <span class="mif-chrome icon"></span>
+                    </div>
+                    <span class="branding-bar">选择专家Excel</span>
+                    <span class="badge-top">
+
+                    </span>
+                    <div class="slide-back d-flex flex-justify-center flex-align-center p-4 op-mauve">
+                      <p id="pro_file" class="text-center fg-black"></p>
+                    </div>
+                </div>
+
+                <div id='phd_excel' data-role="tile" class="bg-red" data-effect="hover-zoom-up">
+                    <div class="slide-front" >
+                        <span class="mif-table icon"></span>
+                    </div>
+                    <div class="slide-back d-flex flex-justify-center flex-align-center p-4 op-mauve">
+                        <p id="phd_file" class="text-center fg-black">
+                        </p>
+                    </div>
+                    <span class="branding-bar">选择博士后Excel</span>
+                </div>
+
+                <div id="voting_start"
+                    data-role="tile" class="bg-indigo">
+                <span class="mif-star-empty icon"></span>
+                <span class="branding-bar">开始投票</span>
+              </div>
+
+              <div id='voting_stop' data-role="tile" class="bg-teal">
+                <span class="mif-stop icon"></span>
+                <span class="branding-bar">停止投票</span>
+              </div>
+
+              <div id='voting_result' data-role="tile" class="bg-blue col-5" data-size="wide">
+                <span class="mif-chart-bars icon"></span>
+                <span class="branding-bar">生成投票结果</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 text-center text-leader">
+      专家列表
+      <p class="text-leader2">
+          显示专家投票状态，已投票数量和剩余投票数
+      </p>
+
+  </div>
+  <br>
+
+  <div class="bg-white p-4">
+
+    <!-- <button onclick="$('#msgdlg').data('infobox').open();" class="button alert hide">向选中的专家发送信息</button> -->
+
+    <div class="d-flex flex-wrap flex-nowrap-lg flex-align-center flex-justify-center flex-justify-start-lg mb-2">
+        <div class="w-100 mb-2 mb-0-lg" id="t1_search"></div>
+        <div class="ml-2 mr-2" id="t1_rows"></div>
+        <div class="" id="t1_actions">
+            <button class="button square" onclick="$('#t1').data('table').toggleInspector()"><span class="mif-cog"></span></button>
+        </div>
+    </div>
+
+    <table id="t1" class="table table-border cell-border"
+            data-check="true"
+           data-role="table"
+           data-search-wrapper="#t1_search"
+           data-rows-steps="-1, 5, 10, 20, 30, 100"
+           data-rows-wrapper="#t1_rows"
+           data-info-wrapper="#t1_info"
+           data-pagination-wrapper="#t1_pagination"
+           data-horizontal-scroll="true">
+           <thead>
+            <tr>
+                <th data-name="id" >ID</th>
+            </tr>
+            </thead>
+    </table>
+
+    <div class="d-flex flex-column flex-justify-center">
+        <div id="t1_info"></div>
+        <div id="t1_pagination"></div>
+    </div>
+  </div>
+
+  <div id="msgdlg" class="info-box" data-role="infobox" data-type="info">
+    <span class="button square closer"></span>
+    <div class="info-box-content">
+        <h3>发送信息</h3>
+        <p>这里输入发送给选中专家的消息.</p>
+        <input type="text" data-role="input" placeholder="提醒信息" data-append="<span class='mif-info fg-cyan'>" name="pro_msg">
+          <button id="pro_msg_button" class="button primary">发 送 </button>
+    </div>
+</div>
+
+    <script>
+      // You can also require other files to run in this process
+      require('./voting_renderer.js')
+
+    </script>
+
+    <script src="assert/js/metro.min.js"></script>
+  </body>
+</html>
+

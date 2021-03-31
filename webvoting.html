@@ -1,0 +1,151 @@
+$def with (*a, **kw)
+$#var bodyattr= 'class="m4-cloak h-vh-100"'
+$var extrajs = ['assert/js/webvoting.js']
+
+<div class="app-bar pos-relative z-dropdown bg-darkCyan" data-role="appbar" data-expand-point="md">
+    <a href="#" class="brand no-hover bg-white" id="voting_logo">
+        <img src="assert/img/pku.png" width="64">
+    </a>
+    <div class="app-bar-item ml-auto">
+        <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+    </div>
+    <a href="#" class="app-bar-item ml-auto">
+        <span id="voting_pro_name" class="mif-user fg-white"></span>
+    </a>
+</div>
+
+
+<div class="d-flex flex-justify-center flex-align-center p-1 m-3">
+    <div class="row">
+        <div class="cell-lg-4">
+            <div class="p-2 clear">
+                <div class="tiles-grid tiles-group size-3">
+
+                    <a href="dashboard.html" data-role="tile" class="bg-indigo">
+                        <span class="mif-chart-bars icon"></span>
+                        <span class="branding-bar">投票状态</span>
+                    </a>
+                    <a href="logout.html" data-role="tile" class="bg-orange">
+                        <span class="mif-user-minus icon"></span>
+                        <span class="branding-bar">退出登录</span>
+                    </a>
+                    <div id="voting_done" data-role="tile" class="bg-green">
+                        <span class="mif-user-minus icon"></span>
+                        <span class="branding-bar">完成投票</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="" style="height:500px">
+<div data-role="navview" data-compact="md" data-expand="lg" data-toggle="#pane-toggle" data-active-state="true">
+    <div id="voting_phd_list"  class="navview-pane">
+        <div class="bg-cyan d-flex flex-align-center">
+            <button class="pull-button">
+                <span class="mif-menu"></span>
+            </button>
+            <h3 class="text-light m-0 fg-white pl-7" style="line-height: 52px">博士后列表</h3>
+        </div>
+        <!-- <div class="suggest-box">
+            <input type="text" data-role="input" data-clear-button="false" data-search-button="true"
+            placeholder="输入博士后姓名">
+            <button class="holder">
+                <span class="mif-search"></span>
+            </button>
+        </div> -->
+        <ul class="navview-menu">
+            <li>
+                <a href="#">
+                    <span class="icon"><span class="mif-user fg-red"></span></span>
+                    <span class="caption">Apps</span>
+                </a>
+            </li>
+            <li class="item-separator"></li>
+        </ul>
+
+
+    </div>
+    <div id="voting_phd_detail" class="navview-content">
+        <span id="pane-toggle">Hello</span>
+
+    </div>
+</div>
+</div>
+
+<!-- <div class="grid border bd-cyan">
+    <div class="row ">
+        <div class="cell-2">
+            <ul id="voting_phd_list2" data-role="tabs" data-expand="true" data-fixed-tabs="true" data-deep="true"
+                data-tabs-position="vertical h-100">
+                <li>
+                    <a href="#张三">张三</a>
+
+                    <div class="flex " data-cls-bar="bg-white" data-cls-back="bg-red" data-role="progress"
+                        data-value='80' data-small='true'>
+
+                </li>
+                <li><a href="#_target_2">李四</a>
+                    <div data-cls-bar="bg-white" data-cls-back="bg-green" data-role="progress" data-value='80'
+                        data-small='true'></div>
+
+
+                </li>
+                <li>
+                    <a href="#_target_3">王二麻子</a>
+                    <div data-cls-bar="bg-white" data-cls-back="bg-red" data-role="progress" data-value='80'
+                        data-small='true'></div>
+                </li>
+            </ul>
+        </div>
+        <div id="voting_phd_detail2" class="cell-10">
+            <div class="">
+                <div id="张三">
+                    <div data-role="panel" data-cls-panel=“no-border-left” data-title-caption="详细资料"
+                        data-collapsible="true" data-cls-title="bg-lightCyan fg-white" data-cls-title-icon="bg-cyan"
+                        data-title-icon="<span class='mif-user'></span>">
+                        张三 个人资料
+                    </div>
+                    <div id="张三">
+                        <div data-role="panel" data-title-caption="博士后投票" data-collapsible="false"
+                            data-cls-title="bg-lightCyan fg-white" data-cls-title-icon="bg-cyan"
+                            data-title-icon="<span class='mif-rocket'></span>">
+                            <button class="command-button icon-right success m-1">
+                                <span class="mif-checkmark icon"></span>
+                                <span class="caption">
+                                    同意，推荐此人成为博雅博士后
+                                    <small>单击此处更改推荐结果</small>
+                                </span>
+                            </button>
+                            <button class="command-button icon-right alert m-1 "><span class="mif-cross icon"></span>
+                                <span class="caption">
+                                    不同意，拒绝此人成为博雅博士后
+                                    <small>单击此处更改推荐结果</small>
+                                </span></button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div id="_target_2">
+                The shield is a post-apocalyptic nanomachine.
+            </div>
+            <div id="_target_3">
+                Cream soup is just not the same without basil
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<hr>
+<footer>
+    <div class="bg-cyan  fg-white">
+        <ul class=" group-list horizontal">
+            <li> <span class="mif-copyright"></span> 2021 PostDocVoting - 北京大学博雅博士后投票系统</li>
+            <li>开发者：He Hao, Gao Peng</li>
+            <li>版本号：1.0.17 202103</li>
+        </ul>
+    </div>
+</footer>

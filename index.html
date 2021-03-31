@@ -4,41 +4,73 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="assert/css/metro-all.min.css">
+    <style>
+
+    </style>
   </head>
-  <body>
-    <h1 class="text-center">Metro 4</h1>
-    <h3 class="text-center">The Components Library</h3>
-    <div data-role="cube"></div>
+  <body class="m4-cloak h-vh-100">
 
-    <div id="holder">
-      Drag your file here
+    <div class="app-bar pos-relative z-dropdown bg-darkCyan m-0 p-0" data-role="appbar" data-expand-point="md">
+      <a href="#" class="brand no-hover bg-white" id="voting_logo">
+          <img src="assert/img/pku.png" width="64">
+      </a>
+      <div class="app-bar-item ml-auto">
+          <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+      </div>
+      <a href="#" class="app-bar-item ml-auto">
+          <span id="voting_pro_name" class="mif-user fg-white">管理员</span>
+      </a>
+  </div>
+
+<div class="d-flex flex-justify-center flex-align-center p-1 m-3">
+  <div class="row">
+    <div class="cell-lg-4">
+      <div class="p-2 clear">
+        <div class="tiles-grid tiles-group size-2">
+
+
+            <a href="genpro.html"
+                data-role="tile" class="bg-orange" data-size="wide">
+            <span class="mif-chrome icon"></span>
+            <span class="branding-bar">生成专家列表</span>
+          </a>
+          <a href="voting.html"
+                data-role="tile" class="bg-cyan">
+            <span class="mif-table icon"></span>
+            <span class="branding-bar">发起投票</span>
+          </a>
+          <a href="dashboard.html"
+                data-role="tile" class="bg-indigo">
+            <span class="mif-chart-bars icon"></span>
+            <span class="branding-bar">投票状态</span>
+          </a>
+
+        </div>
+      </div>
     </div>
-    <!-- All of the Node.js APIs are available in this renderer process. -->
-    We are using Node.js <script>document.write(process.versions.node)</script>,<br>
-    Chromium <script>document.write(process.versions.chrome)</script>,<br>
-    and Electron <script>document.write(process.versions.electron)</script>.<br>
-    <div id="context" />
-    <!--script>
+  </div>
+</div>
+
+<textarea id="pro_url" data-role="textarea"
+          data-default-value="专家使用的投票网址"
+          data-cls-textarea="bg-darkCyan fg-white"
+          data-prepend="<a href='#' class='success' id='get_host_ip'><span class='mif-picassa fg-cyan'>获取专家访问网址</span></a>"
+          data-cls-prepend="bg-light"
+          data-clear-button="false"></textarea>
+
+
+    <script>
       // You can also require other files to run in this process
-      require('./renderer.js')
-    </script-->
+      require('./auth_renderer.js')
+    </script>
 
-<script>
-  document.addEventListener('drop', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    for (let f of e.dataTransfer.files) {
-      console.log('File(s) you dragged here: ', f.path);
-      document.getElementById("holder").innerHTML = "<br>file:"+f.path;
-    }
-  });
-  document.addEventListener('dragover', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  });
-</script>
-
+    <div class="navview-pane">
+      <abbr>&copy版权所有:2021 He Hao, Gao Peng 版本 1.0.17 <br>
+      Node.js <script>document.write(process.versions.node)</script><br>
+      Chromium <script>document.write(process.versions.chrome)</script><br>
+      Electron <script>document.write(process.versions.electron)</script><br>
+    </abbr>
+    </div>
     <script src="assert/js/metro.min.js"></script>
   </body>
 </html>
