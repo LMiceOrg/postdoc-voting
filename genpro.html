@@ -5,31 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="assert/css/metro-all.min.css">
     <style>
-       .navview-pane {
-  background-color: #222D32;
-  color: #b8c7ce;
-  font-size: 14px;
-}
- .navview-content {
-  padding-top: 52px;
-  background-color: #ECF0F5;
-}
-
-
     </style>
   </head>
   <body>
 
-    <div class="navview-pane">
-      <div class="bg-darkCyan d-flex flex-align-center">
-
-        <button class="m-0" id="voting_logo">
+    <div class="app-bar pos-relative z-dropdown bg-darkCyan m-0 p-0" data-role="appbar" data-expand-point="md">
+      <a href="#" class="brand no-hover bg-white" id="voting_logo">
           <img src="assert/img/pku.png" width="64">
-        </button>
-
-        <h2 class="text-light m-0 fg-white pl-7" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
-    </div>
-    </div>
+      </a>
+      <div class="app-bar-item ml-auto">
+          <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+      </div>
+      <a href="#" class="app-bar-item ml-auto">
+          <span id="voting_pro_name" class="mif-user fg-white">管理员</span>
+      </a>
+  </div>
 
     <div class="cell-md-8 d-flex flex-justify-left flex-justify-end-md flex-align-center">
       <ul class="breadcrumbs">
