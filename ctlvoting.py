@@ -30,9 +30,12 @@ genpro = ProGenerator()
 votingman = VotingManager()
 
 # websocket port
-port = 5678
+ws_port = 15678
+ws_ip = '0.0.0.0'
+
 if len(sys.argv) >=2:
-    port = sys.argv[1]
+    ws_port = sys.argv[1]
+    #print('port', port)
 
 def get_host_ip():
     try:
@@ -89,9 +92,7 @@ async def main_logic(websocket, path):
     except:
         print("recv_msg failed")
 
-ws_ip = get_host_ip()
-ws_ip = '0.0.0.0'
-ws_server = websockets.serve(main_logic, ws_ip, port)
+ws_server = websockets.serve(main_logic, ws_ip, ws_port)
 
 asyncio.get_event_loop().run_until_complete(ws_server)
 asyncio.get_event_loop().run_forever()

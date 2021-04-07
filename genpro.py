@@ -195,10 +195,16 @@ class ProGenerator(object):
                 self.pro_rows.append(i+2)
         return ret
     def read_xls(self, name):
+        book = None
         try:
+            #print("opening ", name)
             book = xlrd.open_workbook(name)
-        except:
-            print("Open Excel(%s) failed!" % name)
+        except Exception e:
+            print("Open Excel(%s) failed as (%s)!" % (name, str(e)) )
+        #print('opened ', book)
+        if not book:
+            return {}
+
         ctx=dict()
         for i in range(book.nsheets):
             s = book.sheet_by_index(i)
