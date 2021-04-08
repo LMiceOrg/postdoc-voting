@@ -1032,8 +1032,9 @@ function get_pro_name() {
     //console.log(cookie);
     ca.forEach((it) => {
         var item = it.trimLeft();
-        if (item.indexOf('user_name=') == 0) {
-            user_name = decodeURIComponent(item.substr(10));
+        if (item.indexOf('pro_name=') == 0) {
+            //console.log()
+            user_name = decodeURIComponent(item.substr(9));
         }
     });
 
