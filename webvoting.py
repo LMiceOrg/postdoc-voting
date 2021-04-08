@@ -77,10 +77,11 @@ def trace_error(fn, *args, **kw):
 def check_auth(fn, *args, **kw):
     def wrapped(*args, **kw):
         cookie = web.webapi.cookies()
+        pro_name = cookie.get('pro_name')
         user_id = cookie.get('user_id')
         user_name = cookie.get('user_name')
         challenge = cookie.get('challenge')
-        if user_id == None or user_name == None or challenge == None :
+        if user_id == None or user_name == None or challenge == None or pro_name == None:
             print('not auth')
             return web.seeother("/login")
         else:
@@ -89,6 +90,7 @@ def check_auth(fn, *args, **kw):
             req.challenge=challenge
             req.user_id = user_id
             req.user_name = user_name
+            req.pro_name = pro_name
             req.ip_addr = web.ctx.ip
 
             ret = asyncio.get_event_loop().run_until_complete( proc_msg(req.dumps()) )
@@ -99,6 +101,7 @@ def check_auth(fn, *args, **kw):
                 web.webapi.setcookie('user_id', '', expires= -1)
                 web.webapi.setcookie('user_name', '', expires= -1)
                 web.webapi.setcookie('challenge', '', expires= -1)
+                web.webapi.setcookie('pro_name', '', expires= -1)
                 return web.seeother("/login")
 
 
@@ -196,6 +199,7 @@ class logout:
         web.webapi.setcookie('user_id', '', expires= -1)
         web.webapi.setcookie('user_name', '', expires= -1)
         web.webapi.setcookie('challenge', '', expires= -1)
+        web.webapi.setcookie('pro_name', '', expires= -1)
         return web.seeother('/login')
 
 class login:
@@ -234,6 +238,7 @@ class login:
             web.webapi.setcookie('user_id', data.get('user_id'))
             web.webapi.setcookie('user_name', data.get('user_name'))
             web.webapi.setcookie('challenge', ret.challenge)
+            web.webapi.setcookie('pro_name', ret.pro_name)
             return web.seeother('/voting')
 
 class voting_data:

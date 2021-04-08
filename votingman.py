@@ -102,13 +102,17 @@ class VotingManager(object):
             user_id = msg.get('user_id')
             ip_addr= msg.get('ip_addr')
             if self.check_pro(user_name, user_id):
+                user_pos = -1
+                if user_name[:2] == '专家':
+                    user_pos = int(user_name[2:]) -1
+                pro_name = self.pro_data[0][1][2:] [user_pos][1]
                 item = Config()
                 item.user_name = user_name
                 item.user_id = user_id
                 item.ip_addr = ip_addr
                 key = user_name + '-' + user_id + '-'+ip_addr
                 self.login_pros[key] = item
-                return {'method':'login', 'type':'success', 'challenge':self.challenge}
+                return {'method':'login', 'type':'success', 'challenge':self.challenge, 'pro_name':pro_name}
             else:
                 return {'method':'login', 'type':'failed'}
 
@@ -546,11 +550,15 @@ class VotingManager(object):
                 return False
             if len(pro_list[0]) < 13:
                 return False
-
+        user_pos = -1
+        if user_name[:2] == '专家':
+            user_pos = int(user_name[2:]) -1
         for i in range(pro_count):
             pro = pro_list[i]
-            print(pro[1], pro[12])
+            #print(pro[1], pro[12])
+            if user_pos == i and pro[12] == user_id:
+                return True
             if pro[1] == user_name and pro[12] == user_id:
-                print('check pro success',user_name)
+                #print('check pro success',user_name)
                 return True
         return False

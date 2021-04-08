@@ -68,7 +68,7 @@ function createWindow() {
   if (ctlvoting == null) {
     let script = path.join(__dirname, 'dist', 'ctlvoting', 'ctlvoting');
     ctlvoting = subprocess(script, [ws_port, __dirname], {
-      stdio: ['inherit'],
+      stdio: ['ipc'],
       windowsHide: true,
       shell: false
     });
