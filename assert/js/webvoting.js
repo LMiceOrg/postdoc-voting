@@ -87,7 +87,7 @@ $(()=>{
                 }
             }
 
-            var total_voting = ret.pro_list.length * ret.phd_list.length;
+            var total_voting = ret.pro_list.length * ret.max_pro_num;
             var remain = total_voting;
             var vote_yes = 0
             var vote_no = 0
@@ -97,11 +97,13 @@ $(()=>{
                         pro.result.forEach( (phd, j, ar) => {
                             //phd.vote
                             //console.log(phd)
-                            remain -= 1
-                            if(phd.vote == 1)
-                                vote_yes += 1
-                            else if(phd.vote == 2)
-                                vote_no += 1
+
+                            if(phd.vote == 1){
+                                vote_yes += 1;
+                                remain -= 1;
+                            } else if(phd.vote == 2){
+                                vote_no += 1;
+                            }
                         })
                     }
                 });
@@ -197,7 +199,9 @@ $(()=>{
                 //labels and data
                 ret.pro_list.forEach( (pro, idx, ar) => {
 
-                    data.labels.push( pro[1] )
+                    const fake_pro_name = '专家' + (idx+1);
+                    //data.labels.push( pro[1] )
+                    data.labels.push( fake_pro_name )
 
 
                     dataset.data.push( pro_vote_count[ pro[1] ] | 0 );
@@ -421,9 +425,11 @@ $(()=>{
                     data.header.push(col4)
 
                     ret.pro_list.forEach( (pro, idx) =>{
+                        const fake_pro_name = '专家' + (idx+1);
                         dt = []
                         dt.push(idx + 1)
-                        dt.push( pro[1] )
+                        //dt.push( pro[1] )
+                        dt.push( fake_pro_name )
                         dt.push( pro[0] )
                         var dt_voting_done = false
                         ret.voting_data.forEach( (pro_voting)=>{
@@ -526,12 +532,37 @@ $(()=>{
 
         } // dashboard
         else if (ret.method == 'voting') {
-            //console.log('voting');
+            console.log('voting');
+            var obj = $('#pro_voting_summary');
+            if(obj.length > 0) {
+                var vote_yes=0;
+                var vote_no = 0;
+                var vote_remain = ret.phd_list.length;
+
+                ret.voting_data.forEach((item)=>{
+                    if(item.pro_name == my_name) {
+                        if(item.result !== undefined) {
+                            item.result.forEach((vote)=>{
+                                if(vote.vote == 1) {
+                                    vote_yes += 1;
+                                } else {
+                                    vote_no += 1;
+                                }
+                                vote_remain -= 1;
+
+                            })
+                        }
+                    }
+                });
+
+                obj.text(`投票统计：已投同意票${vote_yes}, 已投反对票数${vote_no}，尚待投票人数${vote_remain}`);
+
+            }
             var obj_list = document.querySelector('#voting_phd_list');
             var obj_detail = document.querySelector('#voting_phd_detail');
             if(obj_list && obj_detail) {
                 var my_vote=[]
-                var data =[]
+                var data ={}
 
                 if( ret.voting_data ) {
                     ret.voting_data.forEach((item)=>{
@@ -543,13 +574,20 @@ $(()=>{
 
                 ret.phd_list.forEach((phd) =>{
                     var name = phd[2];
-                    data.push(name);
+                    var value = 2;
+                    my_vote.forEach( (vote)=>{
+                        if(vote.phd_name == name) {
+                            value=vote.vote;
+                        }
+                    })
+                    data[name]=value;
 
                 })
 
                 var json_2 = JSON.stringify(data);
 
                 if(json_2 != phd_voting_data) {
+                    console.log('update phd voting menu')
                     phd_voting_data = json_2;
 
                     // 清除现有数据
@@ -647,20 +685,7 @@ $(()=>{
                     data-cls-title-icon="bg-cyan" \
                     data-title-icon="<span class=\'mif-rocket\'></span>" \
                     > \
-                        <button class="command-button icon-right success m-1"> \
-                            <span class="mif-checkmark icon"></span> \
-                            <span class="caption"> \
-                                同意，推荐此人成为博雅博士后 \
-                                <small>单击此处更改推荐结果</small> \
-                            </span> \
-                        </button> \
-                        <button class="command-button icon-right alert m-1 "> \
-                            <span class="mif-cross icon"></span>   \
-                            <span class="caption"> \
-                                不同意，拒绝此人成为博雅博士后  \
-                                <small>单击此处更改推荐结果</small> \
-                            </span> \
-                        </button> \
+                    button_detail \
                     </div> \
                     ';
 
@@ -680,7 +705,22 @@ $(()=>{
                             .replace(/phd_org2/, phd[9])
                             .replace(/phd_class/, phd[11])
                             .replace(/phd_detail/, phd[10])
-                        var content2 = phd_detail_temp.replace(/phd_detail/g, ctx);
+                        var button_detail =`<button class="command-button icon-right success m-1">
+                        <span class="mif-checkmark icon"></span>
+                        <span class="caption">
+                            同意，推荐给予${phd_name}博雅博士后项目资助
+                            <small>单击更改推荐结果</small>
+                        </span>
+                    </button>
+                    <button class="command-button icon-right alert m-1 ">
+                        <span class="mif-cross icon"></span>
+                        <span class="caption">
+                            不同意，拒绝给予${phd_name}博雅博士后项目资助
+                            <small>单击更改推荐结果</small>
+                        </span>
+                    </button>
+                        `;
+                        var content2 = phd_detail_temp.replace(/phd_detail/g, ctx).replace(/button_detail/g, button_detail);
                         var node2 = document.createElement('div');
                         node2.id = phd[2];
                         node2.innerHTML = content2;
@@ -689,17 +729,54 @@ $(()=>{
                             $('#' + phd[2]).hide();
 
                         console.log('run phd list');
+                        var mif_class='';
+                        var vote_status = 0;
+                        try {
+                            my_vote.forEach((vote)=>{
+                                if(vote.phd_name == phd_name) {
+                                    vote_status = vote.vote;
+                                    throw new Error('done');
+                                }
+                            })
+                        } catch(e) {
+                            if(e.message != 'done') throw e;
+                        }
+
+                        if(vote_status == 0) { //未投票
+                            mif_class ='fg-orange mif-tablet';
+                            //caption.addClass('fg-orange');
+
+                        } else if(vote_status == 1) { //赞成票
+                            mif_class = 'fg-green mif-checkmark';
+                        } else { //反对票
+                            mif_class ='fg-red mif-cross';
+                        }
+
+                        const template = `<li>
+                        <a href="#" name="${phd_name}">
+                            <span class="icon"> <span class="${mif_class}" ></span> </span>
+                            <span class="caption m1-1"> ${phd_name}
+
+                            </span>
+                            <div class="badges">
+                            <span class="badge inline">${phd[12]}</span>
+                            <span class="badge inline bg-black fg-white">推荐顺序 ${phd[0]}</span>
+                            </div>
+                        </a>
+                         </li>`
+                         //console.log(template)
+                        $(template).appendTo(menu);
                         // phd list
-                        menu_phd = $("<li>").appendTo(menu);
-                        //console.log(menu_phd);
-                        anchor = $("<a>").attr('href', "#").attr('name', phd_name).appendTo(menu_phd);
+                        // menu_phd = $("<li>").appendTo(menu);
+                        // //console.log(menu_phd);
+                        // anchor = $("<a>").attr('href', "#").attr('name', phd_name).appendTo(menu_phd);
 
 
-                        icon = $("<span>").addClass("icon").appendTo(anchor);
-                        caption = $("<span>").addClass('caption').appendText(phd_name).appendTo(anchor);
+                        // icon = $("<span>").addClass("icon").appendTo(anchor);
+                        // caption = $("<span>").addClass('caption').appendText(phd_name).appendTo(anchor);
 
-                        mif = $('<span>').appendTo(icon);
-                        console.log(anchor);
+                        // mif = $('<span>').appendTo(icon);
+                        // console.log(anchor);
                         $(document).on('click', 'a[name="'+ phd_name +'"', (e,v)=>{
                             // hide all
                             var anchor = $(e.srcElement)
@@ -720,27 +797,7 @@ $(()=>{
 
 
 
-                        var vote_status = 0;
-                        try {
-                            my_vote.forEach((vote)=>{
-                                if(vote.phd_name == phd_name) {
-                                    vote_status = vote.vote;
-                                    throw new Error('done');
-                                }
-                            })
-                        } catch(e) {
-                            if(e.message != 'done') throw e;
-                        }
 
-                        if(vote_status == 0) { //未投票
-                            mif.addClass('fg-orange mif-tablet');
-                            //caption.addClass('fg-orange');
-
-                        } else if(vote_status == 1) { //赞成票
-                            mif.addClass('fg-green mif-checkmark');
-                        } else { //反对票
-                            mif.addClass('fg-red mif-cross');
-                        }
 
                         $("<li>").addClass('item-separator').appendTo(menu);
                     });

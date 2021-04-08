@@ -18,7 +18,7 @@
             <img src="assert/img/pku.png" width="64">
         </a>
         <div class="app-bar-item ml-auto">
-            <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+            <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
         </div>
         <a href="#" class="app-bar-item ml-auto">
             <span id="voting_pro_name" class="mif-user fg-white">管理员</span>
@@ -141,6 +141,46 @@
         <div data-role="panel" data-title-caption="投票进度报告" data-collapsible="true"
             data-title-icon="<span class='mif-chart-line'></span>" class="mt-4">
             <div class="row">
+                <div class="bg-white p-4 cell-12">
+                    <div class="d-flex flex-wrap flex-nowrap-lg flex-align-center flex-justify-center flex-justify-start-lg mb-2">
+                        <div class="w-100 mb-2 mb-0-lg" id="t1_search"></div>
+                        <div class="ml-2 mr-2" id="t1_rows"></div>
+                        <div class="" id="t1_actions">
+                            <button class="button square" onclick="$('#pro_voting_detail').data('table').toggleInspector()"><span class="mif-cog"></span></button>
+                        </div>
+                    </div>
+                    <table id="pro_voting_detail" class="table table-border cell-border"
+                            data-pagination-next-title="下一页"
+                            data-pagination-prev-title="上一页"
+                            data-table-info-title="显示 $1 到 $2， 合计 $3 条记录"
+                           data-role="table"
+                           data-cls-body-cell="m-0 p-0"
+                           data-search-wrapper="#t1_search"
+                           data-rows-steps="-1, 5, 10, 20, 30, 100"
+                           data-rows-wrapper="#t1_rows"
+                           data-info-wrapper="#t1_info"
+                           data-pagination-wrapper="#t1_pagination"
+                           data-horizontal-scroll="true">
+                        <thead>
+                            <tr>
+                                <th data-name="id">序号</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div class="d-flex flex-column flex-justify-center">
+                        <div id="t1_info"></div>
+                        <div class="d-flex">
+                            <div id="t1_pagination" class="mr-auto"></div>
+                            <button class="command-button icon-right success m-1"
+                                onclick="$('#pro_voting_detail').data('table').export('CSV', 'all', '投票结果.csv', {csvDelimiter: ',', csvNewLine: '\r\n', includeHeader: true});">
+                                <span class="mif-document-file-txt icon"></span>
+                                <span class="caption">导出投票明细到文件</span> </button>
+                            <div class="ml-auto"></div>
+                        </div>
+                    </div>
+                  </div>
+            </div>
+            <!-- <div class="row">
                 <div class="cell-md-6 p-10">
                     <h5 class="text-center">专家投票进度</h5>
                     <canvas id="pro_dashboard"></canvas>
@@ -149,11 +189,11 @@
                     <h5 class="text-center">博士后得票情况</h5>
                     <canvas id="phd_dashboard"></canvas>
                 </div>
-            </div>
+            </div> -->
 
             <hr>
 
-            <div class="row">
+            <!-- <div class="row">
                 <div class="cell-lg-3 cell-sm-6 text-center mt-4">
                     <div class="fg-green"><span class="mif-play"></span></div>
                     <div id="time_start" class="text-bold">11:20:01</div>
@@ -174,7 +214,7 @@
                     <div id="time_remain" class="text-bold">12:22:01</div>
                     <div class="text-upper">预计剩余时间</div>
                 </div>
-            </div>
+            </div> -->
         </div>
 
         <div class="row">

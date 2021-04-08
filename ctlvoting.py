@@ -24,10 +24,10 @@ from votingman import VotingManager
 
 #global vars
 #生成专家列表
-genpro = ProGenerator()
+proc_genpro = ProGenerator()
 
 #发起投票
-votingman = VotingManager()
+proc_votingman = VotingManager()
 
 # websocket port
 ws_port = 15678
@@ -58,13 +58,13 @@ async def proc_msg(ws, msg):
         await ws.send(json.dumps(ret))
     elif method=='genpro':
         #print('genpro')
-        global genpro
-        ret = genpro.proc_msg(msg)
+        global proc_genpro
+        ret = proc_genpro.proc_msg(msg)
         await ws.send(json.dumps(ret))
     elif method=="votingman":
-        global votingman
+        global proc_votingman
         #print('votingman', votingman.pro_json)
-        ret = votingman.proc_msg(msg)
+        ret = proc_votingman.proc_msg(msg)
         await ws.send(json.dumps(ret))
     else:
         ret = {

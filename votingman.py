@@ -40,12 +40,15 @@ class VotingManager(object):
         self.voting_data=[] #[{pro_name:'专家王二', result:[{phd_name:'博士张三', vote:1},{phd_name:博士李四, vote:0}] },{pro_name:'专家2', result:[{phd_name:'博士张三', vote:1},{phd_name:博士李四, vote:0}] }]
         self.voting_status = 0
         self.pro_json = {}
-        self.get_pro_json()
+
 
         self.login_pros=dict()
 
         self.voting_start_time = None
         self.voting_stop_time  = None
+        self.max_pro_num = 0
+
+        self.get_pro_json()
 
     def proc_msg(self, msg):
 
@@ -123,7 +126,12 @@ class VotingManager(object):
 
         word_file = msg.get("word_file")
         if word_file:
-            self.gen_word_file(word_file)
+            prop = {}
+            prop['pici'] = msg.get('pici')
+            prop['zongpici'] = msg.get('zongpici')
+            prop['anno_from'] = msg.get('anno_from')
+            prop['anno_to'] = msg.get('anno_to')
+            self.gen_word_file(word_file, prop)
             return ret
 
         #更新状态 :voting
@@ -138,6 +146,7 @@ class VotingManager(object):
             self.pro_json['voting_status'] = self.voting_status
             if self.voting_status == 1:
                 self.voting_start_time = time.time()
+                self.max_pro_num = int(msg.get("max_pro_num"))
                 self.voting_stop_time = None
             elif self.voting_status == 2:
                 self.voting_stop_time = time.time()
@@ -173,9 +182,11 @@ class VotingManager(object):
         #print(gen_json, self.pro_json)
         return self.pro_json
 
-    def gen_word_file(self, word_name):
+    def gen_word_file(self, word_name, prop={}):
+        print('gen_word_file', word_name, prop)
         ret = {}
         ret['now'] = '{:%Y年%m月%d日 星期%w}'.format(date.today())
+        ret['today'] = '{:%Y年-%m月-%d日}'.format(date.today())
 
         pro_list = None
         pro_count = 0
@@ -195,10 +206,15 @@ class VotingManager(object):
         ret['pro_count'] = str(pro_count)
         ret['phd_count'] = str(phd_count)
 
+        ret['year'] = '{:%Y}'.format(date.today())
+        for k in prop.keys():
+            ret[k] = str(prop[k])
+
         phd_result=[]
+
         for i in range(phd_count):
             # yes, no
-            phd_result.append([0,0])
+            phd_result.append([0,0, phd_list[i][2]])
 
         for pro_voting in self.voting_data:
             if 'result' not in pro_voting:
@@ -218,13 +234,22 @@ class VotingManager(object):
                         phd_result[i][0] += vote_yes
                         phd_result[i][1] += vote_no
                         break
+        #结果排序
+        print('phd_result', phd_result)
+        sort_key = lambda e:e[0]
+        phd_result.sort(key=sort_key, reverse=True)
+        if self.max_pro_num < phd_count:
+            phd_result = phd_result[0:self.max_pro_num]
+            phd_count = self.max_pro_num
+        print('phd_result', phd_result)
+        ret['result_count'] = str(phd_count)
 
         voting_result = []
         for i in range(phd_count):
             phd=phd_list[i]
             item= dict()
             item['t1_id'] = str(i+1)
-            item['t1_name'] = phd[2]
+            item['t1_name'] = phd_result[i][2]
             item['t1_yes'] = str( phd_result[i][0] )
             item['t1_no'] = str( phd_result[i][1] )
 
@@ -257,16 +282,25 @@ class VotingManager(object):
             item['t3_ticket'] = str( phd_result[i][0] )
             t3.append(item)
 
-
+        name = word_name
+        name = name.replace('.doc', '').replace('.docx', '')
+        name1 =name+ ".doc"
         doc_temp = os.path.join(cur_path, 'voting_template.docx')
         with MailMerge(doc_temp) as document:
-            print(document.get_merge_fields())
+            #print(document.get_merge_fields())
             document.merge(**ret)
             document.merge_rows('t1_id', voting_result)
             document.merge_rows('t1_id', voting_result)
             document.merge_rows('t2_id', t2)
             document.merge_rows('t3_id', t3)
-            document.write(word_name)
+            document.write(name1)
+
+        name2 = name+'-公示.doc'
+        doc_temp = os.path.join(cur_path, 'anno_template.docx')
+        with MailMerge(doc_temp) as document:
+            #print(document.get_merge_fields())
+            document.merge(**ret)
+            document.write(name2)
 
 
     def read_xls(self, name):
@@ -287,6 +321,8 @@ class VotingManager(object):
     def gen_pro_json(self):
         #print('gen_pro_json')
         ret = self.pro_json
+
+        ret['max_pro_num'] = self.max_pro_num
 
         pro_list = None
         pro_count = 0
@@ -329,6 +365,8 @@ class VotingManager(object):
             #print("pro", i)
             pro = pro_list[i]
             vote_count = 0
+            vote_yes = 0
+
             for pro_voting in self.voting_data:
                 if pro_voting['pro_name'] != pro[1]:
                     continue
@@ -339,13 +377,17 @@ class VotingManager(object):
                         voting_status = "完成投票"
                 if 'result' in pro_voting.keys():
                     vote_count = len ( pro_voting['result'] )
+                    for vote in pro_voting['result']:
+                        if vote['vote'] == 1:
+                            vote_yes += 1
                     break
             item = list()
             item.append(i+1)
             item.append(pro[1])
-
-            item.append(vote_count )
-            item.append(phd_count - vote_count)
+            item.append(vote_yes)
+            item.append(self.max_pro_num - vote_yes)
+            #item.append(vote_count )
+            #item.append(phd_count - vote_count)
             item.append(voting_status)
             #print(pro[1], vote_count, phd_cont)
 
@@ -353,7 +395,7 @@ class VotingManager(object):
         return ret
     def get_pro_json(self):
         name = os.path.join(cur_path, "assert", "data", "table.json")
-        print(name)
+        #print(name)
         obj = None
         if os.path.exists(name) :
             f = open(name, 'rb')
@@ -368,7 +410,8 @@ class VotingManager(object):
             "pro_file":self.pro_excel,
             "voting":self.voting_status,
             "challenge":self.challenge,
-            'result':obj
+            'result':obj,
+            'max_pro_num':self.max_pro_num
         }
 
     def gen_dashboard(self):
@@ -401,6 +444,7 @@ class VotingManager(object):
 
         ret['time_start'] = self.voting_start_time or time.time() + 3600
         ret['time_stop'] = self.voting_stop_time or time.time() + 3600
+        ret['max_pro_num'] = self.max_pro_num
 
         return ret
     def get_phd_list(self):

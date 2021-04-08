@@ -2,6 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8">
+    <meta name="metro4:locale" content="zh-CN">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="assert/css/metro-all.min.css">
     <style>
@@ -15,7 +16,7 @@
           <img src="assert/img/pku.png" width="64">
       </a>
       <div class="app-bar-item ml-auto">
-          <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+          <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
       </div>
       <a href="#" class="app-bar-item ml-auto">
           <span id="voting_pro_name" class="mif-user fg-white">管理员</span>
@@ -34,17 +35,22 @@
       </ul>
     </div>
 
+
+
     <div class="d-flex flex-justify-center flex-align-center p-1 m-3">
+      <div class="row">
+
+      </div>
       <div class="row">
         <div class="cell-lg-4">
           <div class="p-2 clear">
-            <div class="tiles-grid tiles-group size-4">
+            <div class="tiles-grid tiles-group size-5">
 
                 <div id="pro_excel" data-role="tile" class="bg-cyan" data-effect="hover-zoom-down">
                     <div class="slide-front" >
                       <span class="mif-chrome icon"></span>
                     </div>
-                    <span class="branding-bar">选择专家Excel</span>
+                    <span class="branding-bar">参会专家列表导入</span>
                     <span class="badge-top">
 
                     </span>
@@ -53,7 +59,7 @@
                     </div>
                 </div>
 
-                <div id='phd_excel' data-role="tile" class="bg-red" data-effect="hover-zoom-up">
+                <div id='phd_excel' data-size="wide" data-role="tile" class="bg-red" data-effect="hover-zoom-up">
                     <div class="slide-front" >
                         <span class="mif-table icon"></span>
                     </div>
@@ -61,13 +67,15 @@
                         <p id="phd_file" class="text-center fg-black">
                         </p>
                     </div>
-                    <span class="branding-bar">选择博士后Excel</span>
+                    <span class="branding-bar">博雅博士后项目候选人信息导入</span>
                 </div>
 
-                <div id="voting_start"
+                <div id="voting_start" data-size="wide"
                     data-role="tile" class="bg-indigo">
+                  <span class="badge-top">本次会议指标数：0</span>
                 <span class="mif-star-empty icon"></span>
                 <span class="branding-bar">开始投票</span>
+
               </div>
 
               <div id='voting_stop' data-role="tile" class="bg-teal">
@@ -75,7 +83,8 @@
                 <span class="branding-bar">停止投票</span>
               </div>
 
-              <div id='voting_result' data-role="tile" class="bg-blue col-5" data-size="wide">
+
+              <div id='voting_result' data-role="tile" class="bg-blue col-7" data-size="wide">
                 <span class="mif-chart-bars icon"></span>
                 <span class="branding-bar">生成投票结果</span>
               </div>
@@ -87,7 +96,7 @@
     </div>
 
     <div class="bg-white p-6 text-center text-leader">
-      专家列表
+      专家投票状态
       <p class="text-leader2">
           显示专家投票状态，已投票数量和剩余投票数
       </p>
@@ -139,13 +148,14 @@
     </div>
 </div>
 
+
     <script>
       // You can also require other files to run in this process
       require('./voting_renderer.js')
 
     </script>
 
-    <script src="assert/js/metro.min.js"></script>
+    <script src="assert/js/metro.4.4.3.js"></script>
   </body>
 </html>
 

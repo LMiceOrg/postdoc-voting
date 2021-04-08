@@ -14,7 +14,7 @@
           <img src="assert/img/pku.png" width="64">
       </a>
       <div class="app-bar-item ml-auto">
-          <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后投票系统</h2>
+          <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
       </div>
       <a href="#" class="app-bar-item ml-auto">
           <span id="voting_pro_name" class="mif-user fg-white">管理员</span>
@@ -37,13 +37,13 @@
       <div class="row">
         <div class="cell-lg-4">
           <div class="p-2 clear">
-            <div class="tiles-grid tiles-group size-4">
+            <div class="tiles-grid tiles-group size-5">
 
               <div id="pro_excel" data-role="tile" class="bg-cyan" data-effect="hover-zoom-down">
                 <div class="slide-front" >
                   <span class="mif-chrome icon"></span>
                 </div>
-                <span class="branding-bar">选择专家Excel</span>
+                <span class="branding-bar">专家库导入</span>
                 <span class="badge-top">
 
                 </span>
@@ -52,7 +52,7 @@
                 </div>
               </div>
 
-              <div id='phd_excel' data-role="tile" class="bg-red" data-effect="hover-zoom-up">
+              <div id='phd_excel' data-role="tile" class="bg-red" data-effect="hover-zoom-up" data-size="wide">
                 <div class="slide-front" >
                   <span class="mif-table icon"></span>
                 </div>
@@ -60,12 +60,12 @@
                   <p id="phd_file" class="text-center fg-black">
                   </p>
                 </div>
-                <span class="branding-bar">选择博士后Excel</span>
+                <span class="branding-bar">院系推荐候选人信息导入</span>
               </div>
 
               <div id='dump_excel' data-role="tile" class="bg-orange" data-size="wide">
                 <span class="mif-chart-bars icon"></span>
-                <span class="branding-bar">导出专家列表</span>
+                <span class="branding-bar">生成资格审核通过专家列表</span>
               </div>
 
             </div>
@@ -77,12 +77,12 @@
     <div class="bg-white p-6 text-center text-leader">
       专家列表
       <p class="text-leader2">
-          排除博士生导师和校外导师，生成专家列表
+          排除博士生导师和博士后合作导师，生成专家列表
       </p>
-      <input type="checkbox" data-role="switch" id="genpro_chk_in"
-           data-caption="剔除博士生导师">
-    <input type="checkbox" data-role="switch" id="genpro_chk_out"
-           data-caption="剔除博士生校外导师">
+      <input type="checkbox" data-role="switch" id="genpro_chk_in" checked="true"
+           data-caption="排除候选人博士生导师">
+    <input type="checkbox" data-role="switch" id="genpro_chk_out" checked="true"
+           data-caption="排除候选人博士后合作导师">
   </div>
   <br>
 

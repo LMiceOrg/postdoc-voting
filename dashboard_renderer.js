@@ -14,6 +14,8 @@ let g_phd_chart_data
 let g_phd_table_data
 let g_pro_table_data
 
+let g_pro_voting_detail_data
+
 
 function update_dashboard() {
 
@@ -52,7 +54,7 @@ ipc.on('dashboard', (ev, ret) => {
         $('#pro_count').text(ret.pro_list.length);
         $('#phd_count').text(ret.phd_list.length);
 
-        var total_voting = ret.pro_list.length * ret.phd_list.length;
+        var total_voting = ret.pro_list.length * ret.max_pro_num;
         var remain = total_voting;
         var vote_yes = 0
         var vote_no = 0
@@ -62,18 +64,20 @@ ipc.on('dashboard', (ev, ret) => {
                     pro.result.forEach((phd, j, ar) => {
                         //phd.vote
                         //console.log(phd)
-                        remain -= 1
-                        if (phd.vote == 1)
+
+                        if (phd.vote == 1) {
                             vote_yes += 1
-                        else if (phd.vote == 2)
+                            remain -= 1
+                        } else if (phd.vote == 2) {
                             vote_no += 1
+                        }
                     })
                 }
             });
         }
         var vote_count = vote_yes + vote_no;
 
-        $('#total_voting').text(ret.pro_list.length * ret.phd_list.length);
+        $('#total_voting').text(total_voting);
         $('#remain_voting').text(remain);
         $('#vote_yes').text(vote_yes);
         $('#vote_yes_rate').text(vote_count == 0 ? Number(0).toFixed(2) + '%' : Number(vote_yes / vote_count * 100).toFixed(2) + '%');
@@ -81,7 +85,7 @@ ipc.on('dashboard', (ev, ret) => {
         $('#vote_no_rate').text(vote_count == 0 ? Number(0).toFixed(2) + '%' : Number(vote_no / vote_count * 100).toFixed(2) + '%');
 
         // 投票进度报告
-        obj = $('#pro_dashboard');
+        var obj = $('#pro_dashboard');
         if (obj.length == 1) {
             const colors = ['rgba(255, 99, 132, 0.2)',
                 'rgba(255, 159, 64, 0.2)',
@@ -117,8 +121,9 @@ ipc.on('dashboard', (ev, ret) => {
 
             //labels and data
             ret.pro_list.forEach((pro, idx, ar) => {
-
-                data.labels.push(pro[1])
+                const fake_pro_name = '专家' +(idx+1);
+                // data.labels.push(pro[1])
+                data.labels.push(fake_pro_name)
 
 
                 dataset.data.push(pro_vote_count[pro[1]] | 0);
@@ -298,6 +303,87 @@ ipc.on('dashboard', (ev, ret) => {
              }
 
          }
+
+         obj = $('#pro_voting_detail');
+         if(obj.length == 1) {
+             var table = obj.data('table');
+             if(!table)
+                return;
+            var data={};
+
+            // 生成头
+            data.header=[];
+            data.header.push({name:'id',title:'序号',size:100, sortable:true, sortDir:'asc', format:"number", cls:'bg-gray text-center', clsColumn:'bg-gray text-center'});
+            data.header.push({name:'phd', title:'候选人',size:150, sortable:true, sortDir:'asc', cls:'bg-cyan fg-white text-center', clsColumn:'bg-cyan fg-white text-center'});
+            data.header.push({name:'cls', title:'院系',size:150, sortable:true, sortDir:'asc', cls:'bg-cyan fg-white text-center', clsColumn:'bg-cyan fg-white text-center'});
+
+            var real_pro_list={}
+            ret.pro_list.forEach( (pro, idx) =>{
+                const fake_pro_name = '专家' + (idx+1);
+                real_pro_list[pro[1]] = idx + 3;
+                data.header.push({name:'pro'+idx, title:fake_pro_name,size:150, sortable:true, sortDir:'asc'});
+            });
+
+            // 生成数据
+            data.data =[];
+            var real_phd_dict={};
+            ret.phd_list.forEach( (phd,idx)=>{
+                real_phd_dict[phd[2]] = idx;
+
+                const id = idx+1;
+                item = [];
+                item.push(id);
+                item.push(phd[2]);
+                item.push(phd[12]);
+                for(var i=0; i<Object.keys(real_pro_list).length; ++i){
+                    item.push( '<div class="bg-orange w-100 m-0 p-0 text-center">未投票</div>');
+                }
+                data.data.push(item);
+            });
+
+            //遍历投票结果
+            ret.voting_data.forEach((pro_voting)=>{
+                if('result' in pro_voting) {
+                    const col = real_pro_list[pro_voting.pro_name];
+                    //console.log(col);
+                    if(col !== undefined) {
+                        pro_voting.result.forEach((phd_voting)=>{
+                            //phd_voting.vote == 1? 1:0;
+                            var vote='<div class="bg-green w-100 m-0 p-0 text-center">同意</div>';
+                            if(phd_voting.vote != 1) {
+                                vote = '<div class="bg-red w-100 m-0 p-0 text-center">不同意</div>';
+                            }
+                            const row = real_phd_dict[phd_voting.phd_name];
+                            //console.log(row);
+                            if( row !== undefined) {
+                                console.log(data.data[row][col])
+                                data.data[row][col] = vote; //更新数据
+                                console.log(row, col, vote);
+                            }
+
+                        });
+                    }
+                }
+            });
+
+            var json_2 = JSON.stringify(data);
+            if(g_pro_voting_detail_data != json_2) {
+                g_pro_voting_detail_data = json_2;
+                //console.log('reload pro_table')
+                //console.log(table)
+
+                table.deleteItem(1, (val)=>{
+                    //console.log('del item', val)
+                    return true;});
+                table.header={};
+                table.data = data;
+                table._createItemsFromJSON(table.data);
+                table.currentPage=1;
+                table.resetView();
+            }
+
+
+         }
          //更新列表
          obj = document.querySelector("#pro_table");
          if(obj) {
@@ -338,9 +424,11 @@ ipc.on('dashboard', (ev, ret) => {
                 data.header.push(col4)
 
                 ret.pro_list.forEach( (pro, idx) =>{
+                    const fake_pro_name = '专家' + (idx+1);
                     dt = []
                     dt.push(idx + 1)
-                    dt.push( pro[1] )
+                    //dt.push( pro[1] )
+                    dt.push( fake_pro_name )
                     dt.push( pro[0] )
                     var dt_voting_done = false
                     ret.voting_data.forEach( (pro_voting)=>{

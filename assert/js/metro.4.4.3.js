@@ -313,7 +313,7 @@ function isTouch() {
         return;
     }
 
-    // 
+    //
 
     var PENDING = 'pending';
     var SEALED = 'sealed';
@@ -2691,7 +2691,7 @@ $.fn.extend({
                 });
             } else {
                 el.setAttribute(name, val);
-                // 
+                //
             }
         });
     },
@@ -5679,9 +5679,9 @@ $.noConflict = function() {
                     "Sij", "Velj", "Ožu", "Tra", "Svi", "Lip", "Srp", "Kol", "Ruj", "Lis", "Stu", "Pro"
                 ],
                 "days": [
-                    "Nedjelja","Ponedjeljak","Utorak", "Srijeda", "Četvrtak", "Petak", "Subota",  
-                    "Ne","Po", "Ut", "Sr", "Če", "Pe", "Su", 
-                    "Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub" 
+                    "Nedjelja","Ponedjeljak","Utorak", "Srijeda", "Četvrtak", "Petak", "Subota",
+                    "Ne","Po", "Ut", "Sr", "Če", "Pe", "Su",
+                    "Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"
                 ],
                 "time": {
                     "days": "DANI",

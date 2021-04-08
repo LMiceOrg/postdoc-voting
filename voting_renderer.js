@@ -40,6 +40,14 @@ ipc.on(method, (ev, args) => {
         //console.log(args.result);
         var obj = args.result;
         var table = $('#t1').data('table');
+        if(obj) {
+            console.log(args)
+            obj.data.forEach((item, idx)=>{
+                item[1] = '专家' + (idx+1);
+            })
+
+            $("#voting_start .badge-top").text("本次会议指标数：" + args.max_pro_num);
+        }
         if(table) {
             table.deleteItem(1, (val)=>{return true;});
             table.data=obj;
@@ -88,7 +96,44 @@ if(voting_start) {
         }
         evclicktime = now;
 
-        ipc.send(method, 'voting1');
+        Metro.dialog.create({
+            title: "设置本次会议指标数",
+            content: `<div class="mt-2">
+            <input id="max_pro_num"
+            data-role="materialinput"
+            data-label="本次会议指标数"
+            data-informer="每位专家最大推荐名额"  type="text" data-cls-input="text-bold bg-white fg-black"
+            data-icon="<span class='mif-list'></span>"
+            data-cls-line="bg-cyan"
+       data-cls-label="fg-cyan"
+       data-cls-informer="fg-lightCyan"
+       data-cls-icon="fg-darkCyan"
+       ></form>`,
+            closeButton: true,
+            actions: [
+                {
+                    caption: "同意",
+                    cls: "js-dialog-close alert",
+                    onclick: function(){
+                        const max_pro_num = parseInt( $("#max_pro_num")[0].value )
+                        if(isNaN(max_pro_num)) {
+                            alert('本次会议指标数,请输入数字');
+                        } else {
+                            $("#voting_start .badge-top").text("本次会议指标数：" + max_pro_num);
+                            ipc.send(method, 'voting1_' + max_pro_num);
+                        }
+                    }
+                },
+                {
+                    caption: "取消",
+                    cls: "js-dialog-close",
+                    onclick: function(){
+                        // do nothing
+                    }
+                }
+            ]
+        });
+
     }
 }
 
@@ -117,7 +162,86 @@ if(voting_result) {
         }
         evclicktime = now;
 
-        ipc.send(method, "result");
+        // 用户填写信息
+        Metro.dialog.create({
+            title: "设置本次博士后项目评选信息",
+            content: `<div class="mt-2 w-100">
+            <div class="row d-flex w-100">
+                <div class="cell-3">
+                    <span class="caption">会议批次</span>
+                </div>
+                <div class="cell-9">
+                    <input id="pici"
+                    data-role="materialinput"
+                    data-informer="本次博雅博士后项目的批次"  type="text" data-cls-input="text-bold bg-white fg-black"
+                    data-icon="<span class='mif-done-all'></span>"
+                    data-cls-line="bg-cyan"
+                    data-cls-label="fg-cyan"
+                    data-cls-informer="fg-lightCyan"
+                    data-cls-icon="fg-darkCyan">
+                </div>
+            </div>
+            <div class="row d-flex">
+                <div class="cell-3">
+                    <span class="caption">年内总批次</span>
+                </div>
+                <div class="cell-9">
+                    <input id="zongpici"
+                    data-role="materialinput"
+                    data-informer="今年内博雅博士后项目投票的总批次"  type="text" data-cls-input="text-bold bg-white fg-black"
+                    data-icon="<span class='mif-done-all'></span>"
+                    data-cls-line="bg-cyan"
+                    data-cls-label="fg-cyan"
+                    data-cls-informer="fg-lightCyan"
+                    data-cls-icon="fg-darkCyan">
+                </div>
+            </div>
+            <div class="row d-flex">
+                <div class="cell-6">
+                    <span class="caption">公示起始日期</span><input id="anno_from" type="text" data-role="calendar-picker" data-use-now="true" data-null-value="false">
+                </div>
+                <div class="cell-6">
+                <span class="caption">公示结束日期</span><input id="anno_to" type="text" data-role="calendar-picker" data-use-now="true" data-null-value="false">
+                </div>
+            </div>
+  </div>`,
+            closeButton: true,
+            actions: [
+                {
+                    caption: "确定",
+                    cls: "js-dialog-close primary",
+                    onclick: function(){
+                        //alert(METRO_LOCALE);
+                        //const max_pro_num = parseInt( $("#max_pro_num")[0].value )
+                        //if(isNaN(max_pro_num)) {
+                            //alert('本次会议指标数,请输入数字');
+                        //} else {
+                            //$("#voting_start .badge-top").text("本次会议指标数：" + max_pro_num);
+                            //ipc.send(method, 'voting1_' + max_pro_num);
+                        //}
+                        const pici = $('#pici')[0].value | 0;
+                        const zongpici = $('#zongpici')[0].value | 0;
+                        const anno_from = $('#anno_from')[0].value;
+                        const anno_to = $('#anno_to')[0].value;
+                        //console.log( $('#anno_to')[0].value )
+                        ipc.send(method, `result:{"pici":${pici},
+                            "zongpici":${zongpici},
+                            "anno_from":"${anno_from}",
+                            "anno_to":"${anno_to}"
+                        }`);
+                    }
+                },
+                {
+                    caption: "取消",
+                    cls: "js-dialog-close",
+                    onclick: function(){
+                        // do nothing
+                    }
+                }
+            ]
+        });
+
+
 
     }
 }

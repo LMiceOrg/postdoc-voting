@@ -199,7 +199,7 @@ class ProGenerator(object):
         try:
             #print("opening ", name)
             book = xlrd.open_workbook(name)
-        except Exception e:
+        except Exception as e:
             print("Open Excel(%s) failed as (%s)!" % (name, str(e)) )
         #print('opened ', book)
         if not book:

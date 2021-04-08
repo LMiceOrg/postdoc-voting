@@ -42,7 +42,8 @@ function createWindow() {
         javascript: true,
         plugins: true,
         webSecurity: true,
-        nodeIntegration: true
+        nodeIntegration: true,
+        contextIsolation:false
       }
     }
   )
@@ -54,7 +55,7 @@ function createWindow() {
   //mainWindow.setProgressBar(0.5);
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -67,7 +68,7 @@ function createWindow() {
   if (ctlvoting == null) {
     let script = path.join(__dirname, 'dist', 'ctlvoting', 'ctlvoting');
     ctlvoting = subprocess(script, [ws_port, __dirname], {
-      stdio: ['ipc'],
+      stdio: ['inherit'],
       windowsHide: true,
       shell: false
     });
@@ -77,7 +78,7 @@ function createWindow() {
       if (g_status == 0) {
         g_status = 2;
       }
-      console.log("ctlvoting exit " + code);
+      console.log("ctlvoting exit.");
     });
 
     ctlvoting.stdout.on('data', (data) => {
@@ -100,7 +101,7 @@ function createWindow() {
     console.log(script)
 
     webvoting.on('exit', (code) => {
-      console.log("webvoting exit " + code);
+      console.log("webvoting exit.");
     });
 
     webvoting.stdout.on('data', (data) => {
@@ -130,10 +131,10 @@ app.on('window-all-closed', function () {
   //if (process.platform !== 'darwin') {
   g_status = 1;
   if (ctlvoting != null)
-    ctlvoting.kill('SIGTERM');
+    ctlvoting.kill('SIGKILL');
 
   if (webvoting != null)
-    webvoting.kill('SIGTERM');
+    webvoting.kill('SIGKILL');
 
   //dialog.showErrorBox("process", "${py.killed()}");
   app.quit()
@@ -403,14 +404,19 @@ ipc.on("votingman", (ev, arg) => {
     let req = {}
     req.method = method;
     req.status = arg[6];
+    if(req.status == 1) {
+      req.max_pro_num = arg.substr(8)
+    }
 
     ws.send(JSON.stringify(req));
-  } else if (arg == 'result') {
-
+  } else if (arg.substr(0,6) == 'result') {
+    //console.log(arg.substr(7))
+    const prop = JSON.parse(arg.substr(7) );
     let options = {
       defaultPath: '/Users/hehao/work/bj_rtlib/voting/doc',
       title: '导出投票结果',
       message: '投票结果Word文件',
+      defaultPath:`北京大学博雅博士后项目第${prop.pici}次(总第${prop.zongpici}次)投票结果`,
       filters: [{
         name: 'Word',
         extensions: ['doc', 'docx']
@@ -426,6 +432,10 @@ ipc.on("votingman", (ev, arg) => {
       let req = {}
       req.method = method;
       req.word_file = name;
+      for(k in prop) {
+        req[k] = prop[k];
+      }
+
 
       ws.send(JSON.stringify(req));
 
