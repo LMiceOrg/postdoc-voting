@@ -35,8 +35,9 @@ urls=(
     '/login[^/]*',  'login',
     '/logout[^/]*', 'logout',
     '/voting[^/]*', 'voting',
-    '/dashboard[^/]*', 'home',
-    '.*', 'home'
+    # '/dashboard[^/]*', 'home',
+    # '.*', 'home'
+    '.*', 'voting'
 
 )
 

@@ -70,8 +70,7 @@ class PhdFilter(BaseFilter):
 
 
     def cell(self,rdrowx,rdcolx,wtrowx,wtcolx):
-        global pro_rows
-        if rdrowx in pro_rows:
+        if rdrowx in self.pro_rows :
             self.next.cell(rdrowx,rdcolx,self.wrow-1,wtcolx)
 
 class ProGenerator(object):
@@ -80,12 +79,13 @@ class ProGenerator(object):
         self.phd_data = None
         self.pro_excel = None
         self.phd_excel = None
-        self.filter = 0
+        self.filter = 3
         self.pro_rows=list()
 
     def proc_msg(self, msg):
         dump_file= msg.get('dump_file')
         if dump_file:
+            print('genpro :dump file')
             self.gen_pro_excel(dump_file)
             return {}
 
@@ -120,8 +120,9 @@ class ProGenerator(object):
         if self.pro_excel and self.pro_data:
             book = xlrd.open_workbook(self.pro_excel, formatting_info=False)
             wt = XLWTWriter()
-            process(XLRDReader(book, "test.xlsx"), PhdFilter(), wt)
-            #print(wt.output[0][1])
+            process(XLRDReader(book, "test.xlsx"), PhdFilter(self.pro_rows), wt)
+            print(wt.output[0][1])
+            print(name)
             wt.output[0][1].save(name)
 
     def gen_pro_json(self):

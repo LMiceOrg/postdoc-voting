@@ -289,6 +289,7 @@ class VotingManager(object):
         name = word_name
         name = name.replace('.doc', '').replace('.docx', '')
         name1 =name+ ".doc"
+        print('dump word ', name1)
         doc_temp = os.path.join(cur_path, 'voting_template.docx')
         with MailMerge(doc_temp) as document:
             #print(document.get_merge_fields())
@@ -300,6 +301,7 @@ class VotingManager(object):
             document.write(name1)
 
         name2 = name+'-公示.doc'
+        print('dump word ', name2)
         doc_temp = os.path.join(cur_path, 'anno_template.docx')
         with MailMerge(doc_temp) as document:
             #print(document.get_merge_fields())
@@ -553,9 +555,10 @@ class VotingManager(object):
         user_pos = -1
         if user_name[:2] == '专家':
             user_pos = int(user_name[2:]) -1
+        print('check_pro', user_name, user_pos, user_id)
         for i in range(pro_count):
             pro = pro_list[i]
-            #print(pro[1], pro[12])
+            print(i, pro[1], pro[12])
             if user_pos == i and pro[12] == user_id:
                 return True
             if pro[1] == user_name and pro[12] == user_id:
