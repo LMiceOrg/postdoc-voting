@@ -1,19 +1,8 @@
 $def with (*a, **kw)
 $var bodyattr= 'class="m4-cloak h-vh-100"'
 $var extrajs = ['assert/js/webvoting.js']
-<div class="app-bar pos-relative z-dropdown bg-darkCyan" data-role="appbar" data-expand-point="md">
-  <a href="#" class="brand no-hover border bd-cyan bg-white" id="voting_logo">
-      <img src="assert/img/pku.png" width="64">
-  </a>
-  <div class="app-bar-item ml-auto">
-      <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
-  </div>
-  <a href="#" class="app-bar-item ml-auto">
-      <span id="voting_pro_name" class="fg-white"></span>
-  </a>
-</div>
 
-    <div class="text-center d-flex flex-justify-center flex-align-center">
+<div class="text-center d-flex flex-justify-center flex-align-center">
     <form class="bg-white p-4" data-role="validator" action="/login" method="POST">
         <h2 class="mb-0">登录<span class="mif-lock"></span></h2>
         <div class="text-muted mb-4">输入代号与密码登录投票系统</div>
@@ -23,11 +12,11 @@ $var extrajs = ['assert/js/webvoting.js']
         <div class="form-group">
           <input type="text" data-role="input" placeholder="登录密码" data-append="<span class='mif-key fg-blue'>" data-validate="required" name="user_id">
       </div>
-  $if 'error' in ctx.keys():
-      <div class='text-muted mb-4 fg-red'>
-        $:ctx['error']
-      </div>
-  $#endif
+$if 'error' in ctx.keys():
+    <div class='text-muted mb-4 fg-red'>
+    $:ctx['error']
+    </div>
+$#endif
       <div class="form-group">
         <button class="button primary">登 录 </button>
       </div>
@@ -35,15 +24,3 @@ $var extrajs = ['assert/js/webvoting.js']
 </div>
 
 
-
-
-<hr>
-<footer>
-    <div class="bg-cyan  fg-white">
-        <ul class=" group-list horizontal">
-            <li> <span class="mif-copyright"></span> 2021 PostDocVoting - 北京大学博雅博士后投票系统</li>
-            <li>开发者：He Hao, Gao Peng</li>
-            <li>版本号：1.0.17 202103</li>
-        </ul>
-    </div>
-</footer>

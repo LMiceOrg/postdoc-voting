@@ -242,14 +242,16 @@ class VotingManager(object):
         print('phd_result', phd_result)
         sort_key = lambda e:e[0]
         phd_result.sort(key=sort_key, reverse=True)
+        result_count = phd_count
         if self.max_pro_num < phd_count:
-            phd_result = phd_result[0:self.max_pro_num]
-            phd_count = self.max_pro_num
+            result_count = self.max_pro_num
+            #phd_result = phd_result[0:self.max_pro_num]
+            #phd_count = self.max_pro_num
         print('phd_result', phd_result)
-        ret['result_count'] = str(phd_count)
+        ret['result_count'] = str(result_count)
 
         voting_result = []
-        for i in range(phd_count):
+        for i in range(result_count):
             phd=phd_list[i]
             item= dict()
             item['t1_id'] = str(i+1)
@@ -259,32 +261,45 @@ class VotingManager(object):
 
             voting_result.append(item)
 
-        t2=list()
-        for i in range(pro_count):
-            pro = pro_list[i]
-            item = dict()
-            item['t2_id'] = str(i+1)
-            item['t2_name'] = pro[1]
-            item['t2_contact'] = str(pro[10]) + str(pro[11])
-            item['t2_ticket'] = str(0)
-            for pro_voting in self.voting_data:
-                if pro_voting['pro_name'] != pro[1]:
-                    continue
-                if 'result' in pro_voting.keys():
-                    item['t2_ticket'] = str( len( pro_voting['result'] ) )
-                    break
+        voting_remain=[]
+        if self.max_pro_num < phd_count:
+            for i in range(phd_count - self.max_pro_num):
+                idx = i + self.max_pro_num
+                phd = phd_list[idx]
+                item= dict()
+                item['t2_id'] = str(i+1)
+                item['t2_name'] = phd_result[idx][2]
+                item['t2_yes'] = str( phd_result[idx][0] )
+                item['t2_no'] = str( phd_result[idx][1] )
 
-            t2.append(item)
+                voting_remain.append(item)
 
-        t3=list()
-        for i in range(phd_count):
-            phd=phd_list[i]
-            item= dict()
-            item['t3_id'] = str(i+1)
-            item['t3_name'] = phd[2]
-            item['t3_contact'] = str(phd[9]) + str(phd[6])
-            item['t3_ticket'] = str( phd_result[i][0] )
-            t3.append(item)
+        # t2=list()
+        # for i in range(pro_count):
+        #     pro = pro_list[i]
+        #     item = dict()
+        #     item['t2_id'] = str(i+1)
+        #     item['t2_name'] = pro[1]
+        #     item['t2_contact'] = str(pro[10]) + str(pro[11])
+        #     item['t2_ticket'] = str(0)
+        #     for pro_voting in self.voting_data:
+        #         if pro_voting['pro_name'] != pro[1]:
+        #             continue
+        #         if 'result' in pro_voting.keys():
+        #             item['t2_ticket'] = str( len( pro_voting['result'] ) )
+        #             break
+
+        #     t2.append(item)
+
+        # t3=list()
+        # for i in range(phd_count):
+        #     phd=phd_list[i]
+        #     item= dict()
+        #     item['t3_id'] = str(i+1)
+        #     item['t3_name'] = phd[2]
+        #     item['t3_contact'] = str(phd[9]) + str(phd[6])
+        #     item['t3_ticket'] = str( phd_result[i][0] )
+        #     t3.append(item)
 
         name = word_name
         name = name.replace('.doc', '').replace('.docx', '')
@@ -295,9 +310,9 @@ class VotingManager(object):
             #print(document.get_merge_fields())
             document.merge(**ret)
             document.merge_rows('t1_id', voting_result)
-            document.merge_rows('t1_id', voting_result)
-            document.merge_rows('t2_id', t2)
-            document.merge_rows('t3_id', t3)
+            document.merge_rows('t2_id', voting_remain)
+            #document.merge_rows('t2_id', t2)
+            #document.merge_rows('t3_id', t3)
             document.write(name1)
 
         name2 = name+'-公示.doc'
@@ -472,6 +487,7 @@ class VotingManager(object):
         ret['voting_status'] = self.voting_status
         ret['phd_list'] = self.get_phd_list()
         ret['voting_data'] = self.voting_data
+        ret['max_pro_num'] = self.max_pro_num
 
         return ret
 

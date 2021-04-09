@@ -4,7 +4,7 @@ $def with(page)
   <head>
     <meta charset="utf-8">
     <meta name="metro4:locale" content="zh-CN">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> -->
     <title>北京大学博雅博士后项目投票系统</title>
     <link rel="stylesheet" type="text/css" href="assert/css/metro-all.4.4.3.css">
 $if hasattr(page, 'extracss'):
@@ -45,8 +45,30 @@ $else:
     <body>
 $#
 
+<div class="app-bar pos-relative z-dropdown bg-darkCyan" data-role="appbar" data-expand-point="md">
+  <a href="#" class="brand no-hover border bd-cyan bg-white" id="voting_logo">
+      <img src="assert/img/pku.png" width="64">
+  </a>
+  <div class="app-bar-item ml-auto">
+      <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
+  </div>
+  <a href="#" class="app-bar-item ml-auto">
+      <span id="voting_pro_name" class="fg-white"></span>
+  </a>
+</div>
+
 $:page
 
+<hr>
+<footer>
+    <div class="bg-cyan  fg-white">
+        <ul class=" group-list horizontal">
+            <li> <span class="mif-copyright"></span> 2021 PostDocVoting - 北京大学博雅博士后投票系统</li>
+            <li>开发者：He Hao, Gao Peng</li>
+            <li>版本号：1.0.19 20210409</li>
+        </ul>
+    </div>
+</footer>
 
 $#<!-- Latest compiled and minified JavaScript -->
 <script src="assert/js/metro.4.4.3.js"></script>

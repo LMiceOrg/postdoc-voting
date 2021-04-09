@@ -1,0 +1,10 @@
+*.pyc
+*.spec
+
+*.toc
+*.zip
+build
+dist
+doc
+.vscode
+node_modules/.bin

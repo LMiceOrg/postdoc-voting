@@ -108,7 +108,7 @@ if(voting_start) {
        data-cls-label="fg-cyan"
        data-cls-informer="fg-lightCyan"
        data-cls-icon="fg-darkCyan"
-       ></form>`,
+       ></div>`,
             closeButton: true,
             actions: [
                 {

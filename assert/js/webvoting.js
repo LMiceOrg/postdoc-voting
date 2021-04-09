@@ -9,20 +9,33 @@ let phd_chart_data
 let pro_table_data
 let phd_table_data
 
+//记录“我”的投票数据
 let phd_voting_data
+// 记录当前投票的博士后列表
+let phd_voting_list
+// 最大可投赞成票数
+let my_vote_max
+// 当前已经投赞成票数
+let my_vote_yes
+// 当前已经投反对票数
+let my_vote_no
+// 当前未投票数
+let my_vote_remain
 
 let my_name
 
 function refresh_data() {
     var req={}
-    req.method='votingman'
+    req.method='votingman';
+    //!总是voting
+    req.voting = 1;
 
-    var uri = window.location.href;
-    if( uri.indexOf('voting') >= 0) {
-        req.voting = 1;
-    } else if(uri.indexOf('dashboard') >= 0) {
-        req.dashboard = 1;
-    }
+    // var uri = window.location.href;
+    // if( uri.indexOf('voting') >= 0) {
+    //     req.voting = 1;
+    // } else if(uri.indexOf('dashboard') >= 0) {
+    //     req.dashboard = 1;
+    // }
     //console.log(uri);
 
     my_name = get_pro_name();
@@ -532,37 +545,41 @@ $(()=>{
 
         } // dashboard
         else if (ret.method == 'voting') {
-            console.log('voting');
-            var obj = $('#pro_voting_summary');
-            if(obj.length > 0) {
-                var vote_yes=0;
-                var vote_no = 0;
-                var vote_remain = ret.phd_list.length;
+            //console.log(ret);
+
+            {
+                // 更新全局状态
+                my_vote_max = ret.max_pro_num;
+                my_vote_yes=0;
+                my_vote_no = 0;
+                my_vote_remain = ret.phd_list.length;
 
                 ret.voting_data.forEach((item)=>{
                     if(item.pro_name == my_name) {
                         if(item.result !== undefined) {
                             item.result.forEach((vote)=>{
                                 if(vote.vote == 1) {
-                                    vote_yes += 1;
+                                    my_vote_yes += 1;
                                 } else {
-                                    vote_no += 1;
+                                    my_vote_no += 1;
                                 }
-                                vote_remain -= 1;
+                                my_vote_remain -= 1;
 
                             })
                         }
                     }
                 });
 
-                obj.text(`投票统计：已投同意票${vote_yes}, 已投反对票数${vote_no}，尚待投票人数${vote_remain}`);
+                // 更新提示信息
+                update_vote_status();
 
             }
             var obj_list = document.querySelector('#voting_phd_list');
             var obj_detail = document.querySelector('#voting_phd_detail');
             if(obj_list && obj_detail) {
                 var my_vote=[]
-                var data ={}
+                var my_vote_data ={}
+                var phd_list=[]
 
                 if( ret.voting_data ) {
                     ret.voting_data.forEach((item)=>{
@@ -574,166 +591,158 @@ $(()=>{
 
                 ret.phd_list.forEach((phd) =>{
                     var name = phd[2];
-                    var value = 2;
+                    var value = 0;
+
+                    phd_list.push(name);
+
                     my_vote.forEach( (vote)=>{
                         if(vote.phd_name == name) {
                             value=vote.vote;
                         }
                     })
-                    data[name]=value;
+                    my_vote_data[name]=value;
 
                 })
 
-                var json_2 = JSON.stringify(data);
 
-                if(json_2 != phd_voting_data) {
-                    console.log('update phd voting menu')
+                var json_phd_list = JSON.stringify(phd_list);
+                var json_2 = JSON.stringify(my_vote_data);
+
+                //博士后列表是否不同 不同则重新构建所有内容
+                if(json_phd_list != phd_voting_list) {
+                    phd_voting_list = json_phd_list;
                     phd_voting_data = json_2;
 
-                    // 清除现有数据
+                    // 1.清除现有数据
                     navview = $('div[data-role="navview"]');
                     //console.log(navview);
                     pane = navview.children('.navview-pane');
                     content = navview.children('.navview-content');
                     menu_container = pane.children(".navview-menu-container");
                     menu = menu_container.children('.navview-menu');
-                    //console.log(menu);
-                    if(menu.length) {
-                        menu.clear();
-                    }
 
+                    menu.clear();
+                    content.children('div').remove();
 
-
-                    //title = $("<li>").addClass("item-header").text("博士后列表");
-                    //title.appendTo(menu);
-
-                    calcMenuHeight=(menu)=>{
-                        var elements_height = 0;
-
-                        $.each(menu.prevAll(), function(){
-                            elements_height += $(this).outerHeight(true);
-                        });
-                        $.each(menu.nextAll(), function(){
-                            elements_height += $(this).outerHeight(true);
-                        });
-                        menu_container.css({
-                            height: "calc(100% - "+(elements_height)+"px)"
-                        });
-                    }
-
-
-
-                    // while (obj_list.firstChild) {
-                    //     obj_list.removeChild(obj_list.firstChild);
-                    // }
-                    while(obj_detail.firstChild) {
-                        obj_detail.removeChild(obj_detail.firstChild);
-                    }
-
-                    // badge cross tablet
-                    var phd_ctx_temp = '\
-                         <div class="grid border bd-cyan"> \
-                         <div class="row"> \
-                         <div class="cell-1 bg-lightGray">姓名</div>   \
-                         <div class="cell-1">phd_name</div> \
-                         <div class="cell-1 bg-lightGray">出生年月</div> \
-                         <div class="cell-2">phd_birth</div> \
-                         <div class="cell-2 bg-lightGray">博士毕业时间</div> \
-                         <div class="cell-2">phd_date</div> \
-                         <div class="cell bg-lightGray">当前身份</div> \
-                         <div class="cell-2">phd_credit</div> \
-                         </div> \
-                         <div class="row"> \
-                         <div class="cell-1 bg-gray">推荐顺序</div> \
-                         <div class="cell-1">phd_order</div> \
-                         <div class="cell-1 bg-gray">院系顺序</div> \
-                         <div class="cell-2">phd_order_college</div> \
-                         <div class="cell-2 bg-gray">博士导师</div> \
-                         <div class="cell-2">phd_teacher</div> \
-                         <div class="cell-1 bg-gray">合作导师</div> \
-                         <div class="cell-2">phd_teacher2</div> \
-                         </div> \
-                         <div class="row"> \
-                         <div class="cell-1 bg-lightGray">学位授予机构</div> \
-                         <div class="cell-1">phd_org</div> \
-                         <div class="cell-1 bg-lightGray">目前所属单位</div> \
-                         <div class="cell-2">phd_org2</div> \
-                         <div class="cell-2 bg-lightGray">所属一级学科</div> \
-                         <div class="cell-1">phd_class</div> \
-                         </div> \
-                         <div class="row"> \
-                         <div class="cell-1 bg-gray">详细信息</div> \
-                         <div class="cell">phd_detail</div> \
-                         </div> \
-                         </div> \
-                    ';
-
-                    var phd_detail_temp =' \
-                    <div data-role="panel" \
-                    data-cls-panel=“no-border-left” \
-                    data-title-caption="详细资料" \
-                    data-collapsible="true" \
-                    data-cls-title="bg-lightCyan fg-white" \
-                    data-cls-title-icon="bg-cyan" \
-                    data-title-icon="<span class=\'mif-user\'></span>"> \
-                    phd_detail \
-                    </div> \
-                    <div data-role="panel"  \
-                    data-title-caption="博士后投票" \
-                    data-collapsible="false" \
-                    data-cls-title="bg-lightCyan fg-white" \
-                    data-cls-title-icon="bg-cyan" \
-                    data-title-icon="<span class=\'mif-rocket\'></span>" \
-                    > \
-                    button_detail \
-                    </div> \
-                    ';
-
-
-                    //console.log('run foreach');
+                    // 2. 重新生成菜单 和内容
                     ret.phd_list.forEach((phd,idx) =>{
-                        var phd_name = phd[2];
-                        var ctx = phd_ctx_temp.replace(/phd_name/g, phd[2])
-                            .replace(/phd_birth/g, phd[3])
-                            .replace(/phd_date/g, phd[4])
-                            .replace(/phd_credit/g, phd[5])
-                            .replace(/phd_order/, phd[0])
-                            .replace(/phd_order_college/g, phd[1])
-                            .replace(/phd_teacher/, phd[6])
-                            .replace(/phd_teacher2/, phd[7])
-                            .replace(/phd_org/, phd[8])
-                            .replace(/phd_org2/, phd[9])
-                            .replace(/phd_class/, phd[11])
-                            .replace(/phd_detail/, phd[10])
-                        var button_detail =`<button class="command-button icon-right success m-1">
-                        <span class="mif-checkmark icon"></span>
-                        <span class="caption">
-                            同意，推荐给予${phd_name}博雅博士后项目资助
-                            <small>单击更改推荐结果</small>
-                        </span>
-                    </button>
-                    <button class="command-button icon-right alert m-1 ">
-                        <span class="mif-cross icon"></span>
-                        <span class="caption">
-                            不同意，拒绝给予${phd_name}博雅博士后项目资助
-                            <small>单击更改推荐结果</small>
-                        </span>
-                    </button>
-                        `;
-                        var content2 = phd_detail_temp.replace(/phd_detail/g, ctx).replace(/button_detail/g, button_detail);
-                        var node2 = document.createElement('div');
-                        node2.id = phd[2];
-                        node2.innerHTML = content2;
-                        obj_detail.appendChild(node2);
-                        if(idx > 0)
-                            $('#' + phd[2]).hide();
+                        var phd_info={
+                            index:idx,
+                            name:phd[2],
+                            birth:phd[3],
+                            date:phd[4],
+                            credit:phd[5],
+                            order:phd[0],
+                            order_college:phd[1],
+                            teacher:phd[6],
+                            teacher2:phd[7],
+                            org:phd[8],
+                            org2:phd[9],
+                            class:phd[11],
+                            detail:phd[10],
+                            college:phd[12]
+                        };
 
-                        console.log('run phd list');
+                        gen_phd_id(phd_info);
+
+
+
+                        var phd_detail = `<div class="grid border bd-cyan no-gap">
+                        <div class="row border no-gap">
+                        <div class="cell-1 border bg-lightGray">姓名</div>
+                        <div class="cell-2 border ">${phd_info.name}</div>
+                        <div class="cell-2 border bg-lightGray">院系</div>
+                        <div class=" ">${phd_info.college}</div>
+                        <!--
+                        <div class="cell-1 bg-lightGray">出生年月</div>
+                        <div class="cell-2">${phd_info.birth}</div>
+                        <div class="cell-2 bg-lightGray">博士毕业时间</div>
+                        <div class="cell-2">${phd_info.date}</div>
+                        <div class="cell bg-lightGray">当前身份</div>
+                        <div class="cell-2">${phd_info.credit}</div>
+                        -->
+                        </div>
+                        <!--
+                        <div class="row">
+                        <div class="cell-1 bg-gray">推荐顺序</div>
+                        <div class="cell-1">${phd_info.order}</div>
+                        <div class="cell-1 bg-gray">院系顺序</div>
+                        <div class="cell-2">${phd_info.order_college}</div>
+                        <div class="cell-2 bg-gray">博士导师</div>
+                        <div class="cell-2">${phd_info.teacher}</div>
+                        <div class="cell-1 bg-gray">合作导师</div>
+                        <div class="cell-2">${phd_info.teacher2}</div>
+                        </div>
+                        -->
+                        <div class="row border no-gap">
+                        <!--
+                        <div class="cell-1 border bg-lightGray">学位授予机构</div>
+                        <div class="cell-1 border ">${phd_info.org}</div>
+                        -->
+                        <div class="cell-1 border bg-lightGray">目前所属单位</div>
+                        <div class="cell-2 border ">${phd_info.org2}</div>
+                        <div class="cell-2 border bg-lightGray">所属一级学科</div>
+                        <div class=" ">${phd_info.class}</div>
+                        </div>
+                        <div class="row">
+                        <div class="cell-1 bg-lightGray">详细信息</div>
+                        <div class="p-6">${phd_info.detail}</div>
+                        </div>
+                        </div>
+                        `;
+
+                        var button_detail =`
+                            <button class="command-button icon-right success m-1">
+                                <span class="mif-checkmark icon"></span>
+                                <span class="caption">
+                                    同意，推荐给予${phd_info.name}博雅博士后项目资助
+                                    <small>单击更改推荐结果</small>
+                                </span>
+                            </button>
+                            <button class="command-button icon-right secondary m-1 ">
+                                <span class="mif-cross icon"></span>
+                                <span class="caption">
+                                    不同意，拒绝给予${phd_info.name}博雅博士后项目资助
+                                    <small>单击更改推荐结果</small>
+                                </span>
+                            </button>
+                        `;
+
+                        var phd_panel = `<div data-role="panel"
+                            data-cls-panel=“no-border-left”
+                            data-title-caption="详细资料"
+                            data-collapsible="true"
+                            data-cls-title="bg-gray fg-white"
+                            data-cls-title-icon="bg-cyan"
+                            data-title-icon="<span class=\'mif-user\'></span>">
+                            ${phd_detail}
+                            </div>
+                            <div data-role="panel"
+                            data-title-caption="博士后投票"
+                            data-collapsible="false"
+                            data-cls-title="bg-gray fg-white"
+                            data-cls-title-icon="bg-cyan"
+                            data-title-icon="<span class=\'mif-rocket\'></span>"
+                            >
+                            ${button_detail}
+                            </div>
+                        `;
+
+                        var node2 = $('<div>');
+
+                        node2.attr('id', phd_info.id);
+                        $(phd_panel).appendTo(node2);
+                        node2.appendTo( $('#voting_phd_detail') );
+                        //obj_detail.appendChild(node2);
+                        if(idx > 0)
+                            node2.hide();
+
+                        // 生成菜单
                         var mif_class='';
                         var vote_status = 0;
                         try {
                             my_vote.forEach((vote)=>{
-                                if(vote.phd_name == phd_name) {
+                                if(vote.phd_name == phd_info.name) {
                                     vote_status = vote.vote;
                                     throw new Error('done');
                                 }
@@ -752,120 +761,190 @@ $(()=>{
                             mif_class ='fg-red mif-cross';
                         }
 
-                        const template = `<li>
-                        <a href="#" name="${phd_name}">
-                            <span class="icon"> <span class="${mif_class}" ></span> </span>
-                            <span class="caption m1-1"> ${phd_name}
 
-                            </span>
-                            <div class="badges">
-                            <span class="badge inline">${phd[12]}</span>
-                            <span class="badge inline bg-black fg-white">推荐顺序 ${phd[0]}</span>
-                            </div>
-                        </a>
-                         </li>`
+
+                        const menu_template = `
+                        <li>
+                            <a href="#" name="${phd_info.id}" real_name="${encodeURI(phd_info.name)}">
+                                <span class="icon"> <span class="${mif_class}" ></span> </span>
+                                <span class="caption"> ${phd_info.name}
+
+                                </span>
+                                <div class="badges">
+                                <span class="badge inline">${phd_info.college}</span>
+                                <span class="badge inline bg-black fg-white">推荐顺序 ${phd_info.order_college}</span>
+                                </div>
+                            </a>
+                         </li>
+                         <li class="item-separator">
+                         </li>
+                         `
                          //console.log(template)
-                        $(template).appendTo(menu);
-                        // phd list
-                        // menu_phd = $("<li>").appendTo(menu);
-                        // //console.log(menu_phd);
-                        // anchor = $("<a>").attr('href', "#").attr('name', phd_name).appendTo(menu_phd);
+                         var menu_item = $(menu_template);
+                         menu_item.appendTo(menu);
 
-
-                        // icon = $("<span>").addClass("icon").appendTo(anchor);
-                        // caption = $("<span>").addClass('caption').appendText(phd_name).appendTo(anchor);
-
-                        // mif = $('<span>').appendTo(icon);
-                        // console.log(anchor);
-                        $(document).on('click', 'a[name="'+ phd_name +'"', (e,v)=>{
+                         menu_item.on('click','a', (e)=>{
                             // hide all
-                            var anchor = $(e.srcElement)
-                            //console.log(anchor, anchor.prop('tagName'));
+
+                            var anchor = $(e.target);
+
                             while(anchor.prop('tagName') != 'A') {
                                 anchor = anchor.parent();
                             }
-                            var phd_name = anchor.attr('name');
-                            //console.log(phd_name);
-                            content = $('#' + phd_name );
-                            ctxs = content.parent().children();
-                            for(var i =0; i< ctxs.length; i++) {
-                                $(ctxs[i]).hide();
-                            }
+                            //console.log(anchor);
+                            var phd_id = anchor.attr('name');
+                            //var phd_name =decodeURI( anchor.attr('real_name') );
+                            //console.log(phd_id);
+                            var content = $('#' + phd_id );
+                            content.parent().children('div').hide();
                             content.show();
 
-                        })
+                        });
 
 
 
-
-
-                        $("<li>").addClass('item-separator').appendTo(menu);
                     });
 
-                    calcMenuHeight(menu);
+                    // 3. 更新菜单高度
+                    calcMenuHeight=(a_menu, a_container)=>{
+                        var elements_height = 0;
 
-                    // 绑定按钮事件
-                    var obj = document.querySelectorAll('button.success.command-button');
-                    if(obj) {
-                        obj.forEach((button)=>{
-                            button.onclick=(e)=>{
-                                var phd_name = button.parentNode.parentNode.parentNode.id;
-                                anchor = $('a[href="#"][name="'+phd_name+'"]');
-                                //console.log(anchor)
-                                if(anchor) {
-                                    mif = anchor.children('span.icon').children('span');
-                                    mif.removeClass('mif-tablet mif-cross mif-checkmark');
-                                    mif.removeClass('fg-red fg-orange fg-green').addClass('fg-green mif-checkmark');
-
-                                    req={}
-                                    req.method="votingman";
-                                    req.update_vote=1;
-                                    req.pro_name = my_name;
-                                    req.phd_name = phd_name;
-                                    req.vote = 1;
-
-                                    ws.send(JSON.stringify(req));
-                                }
-                                //console.log(button.parentNode.parentNode.parentNode.id, anchor)
-                            }
+                        $.each(a_menu.prevAll(), function(){
+                            elements_height += $(this).outerHeight(true);
+                        });
+                        $.each(a_menu.nextAll(), function(){
+                            elements_height += $(this).outerHeight(true);
+                        });
+                        a_container.css({
+                            height: "calc(100% - "+(elements_height)+"px)"
                         });
                     }
+                    calcMenuHeight(menu, menu_container);
 
-                    obj = document.querySelectorAll('button.alert.command-button');
-                    if(obj) {
-                        obj.forEach((button)=>{
-                            button.onclick=(e)=>{
-                                var phd_name = button.parentNode.parentNode.parentNode.id;
-                                console.log(phd_name)
-                                anchor = $('a[href="#"][name="'+phd_name+'"]');
-                                if(anchor) {
-                                    mif = anchor.children('span.icon').children('span');
-                                    mif.removeClass('mif-tablet mif-cross mif-checkmark');
-                                    mif.removeClass('fg-red fg-orange fg-green').addClass('fg-red mif-cross');
-
-                                    req={}
-                                    req.method="votingman";
-                                    req.update_vote=1;
-                                    req.pro_name = my_name;
-                                    req.phd_name = phd_name;
-                                    req.vote = 2;
-
-                                    ws.send(JSON.stringify(req));
+                    // 4. 绑定按钮事件
+                    $('button.command-button').on('click', 'span.caption', (e)=>{
+                        var button = $(e.target);
+                        var action_yes = false;
 
 
-                                }
-                                //console.log(button.parentNode.parentNode.parentNode.id, anchor)
+                        while(button !== undefined) {
+                            if(button.prop('tagName') == 'BUTTON') {
+                                action_yes = button.hasClass('success');
+                                break;
                             }
-                        });
+                            button = button.parent();
+                        }
 
-                    }
+                        //找不到按钮
+                        if(button === undefined) {
+                            return;
+                        }
+
+                        const phd_obj = button.parent().parent().parent();
+                        const phd_id = phd_obj.attr('id');
+                        const anchor = $('a[href="#"][name="'+phd_id +'"]');
+                        if(anchor) {
+                            const phd_name =decodeURI( anchor.attr('real_name') );
+
+                            var mif = anchor.children('span.icon').children('span');
+                            var cur_yes = mif.hasClass('fg-green');
+                            var cur_no = mif.hasClass('fg-red');
+
+
+                            var req={};
+                            req.method="votingman";
+                            req.update_vote=1;
+                            req.pro_name = my_name;
+                            req.phd_name = phd_name;
+
+                            if(action_yes && !cur_yes) {
+                                if(my_vote_yes + 1 > my_vote_max) {
+                                    Metro.dialog.create({
+                                        title: "您已经达到本次项目赞成票最大值",
+                                        content: `<div class="mt-2 p-2">
+                                        <h5>本次会议每位专家最大推荐名额: ${my_vote_max} </h5>
+                                        </div>`,
+                                        closeButton: true,
+                                        actions: [
+                                            {
+                                                caption: "确定",
+                                                cls: "js-dialog-close alert"
+                                            }
+                                        ]
+                                    });
+                                    return;
+                                }
+                                mif.removeClass('mif-tablet mif-cross mif-checkmark fg-red fg-orange fg-green')
+                                mif.addClass('fg-green mif-checkmark');
+                                my_vote_yes += 1;
+                                req.vote = 1;
+                                ws.send(JSON.stringify(req));
+
+                                update_vote_status();
+
+                            } else if(!action_yes && !cur_no) {
+                                mif.removeClass('mif-tablet mif-cross mif-checkmark fg-red fg-orange fg-green')
+                                mif.addClass('fg-red mif-cross');
+                                my_vote_yes -= 1;
+                                if(my_vote_yes < 0)
+                                    my_vote_yes = 0;
+                                req.vote = 2;
+                                ws.send(JSON.stringify(req));
+
+                                update_vote_status();
+                            }
+
+
+                        }
+
+                    });
+                    return;
 
 
                 }
 
+                //我的投票状态已经改变，更新投票状态
+                if(json_2 != phd_voting_data) {
+
+                    phd_voting_data = json_2;
+
+                    const menu_list = $('ul.navview-menu li a[href="#"]');
+                    //console.log('update status');
+                    //console.log(my_vote_data);
+                    menu_list.each((idx, el)=>{
+                        const phd_name = decodeURI(el.getAttribute('real_name'));
+
+                        var el_icon = $(el).find('span.icon span');
+                        //console.log(el_icon)
+
+                        if(my_vote_data[phd_name] === undefined ||
+                            my_vote_data[phd_name] == 0) {
+                            // 未投票
+                            if(!el_icon.hasClass('fg-orange mif-tablet')) {
+                                el_icon.clearClasses().addClass("fg-orange mif-tablet");
+                                //console.log('un', phd_name);
+                            }
+                        } else if (my_vote_data[phd_name] == 1) {
+                            // 赞成票
+                            if(!el_icon.hasClass('fg-green mif-checkmark')) {
+                                el_icon.clearClasses().addClass("fg-green mif-checkmark");
+                                //console.log('yes', phd_name);
+                            }
+
+                        } else {
+                            // 反对票
+                            if(!el_icon.hasClass('fg-red mif-cross')) {
+                                el_icon.clearClasses().addClass("fg-red mif-cross");
+                                //console.log('no', phd_name);
+                            }
+                        }
+
+                    })
 
 
-
+                } else {
+                    //没有任何改变, do-nothing
+                }
 
             }
         }
@@ -929,84 +1008,7 @@ $(()=>{
         grey: 'rgb(201, 203, 207)'
     };
 
-    // var pro_board = document.querySelector("#pro_dashboard");
-    // if (pro_board) {
-    //     pro_chart = new Chart(pro_board.getContext('2d'), {
-    //         type: 'bar',
-    //         data: {
-    //             labels: ["高鹏", "何浩", "张三", "王二", "王二", "王二"],
-    //             datasets: [{
-    //                 label: '专家投票数',
-    //                 data: [12, 19, 3, 5, 2, 3],
-    //                 backgroundColor: [
-    //                     'rgba(255, 99, 132,0.2)',
-    //                     'rgba(54, 162, 235, 0.2)',
-    //                     'rgba(255, 206, 86, 0.2)',
-    //                     'rgba(75, 192, 192, 0.2)',
-    //                     'rgba(153, 102, 255, 0.2)',
-    //                     'rgba(255, 159, 64, 0.2)'
-    //                 ],
-    //                 borderColor: [
-    //                     'rgba(255,99,132,1)',
-    //                     'rgba(54, 162, 235, 1)',
-    //                     'rgba(255, 206, 86, 1)',
-    //                     'rgba(75, 192, 192, 1)',
-    //                     'rgba(153, 102, 255, 1)',
-    //                     'rgba(255, 159, 64, 1)'
-    //                 ],
-    //                 borderWidth: 1
-    //             }]
-    //         },
-    //         options: {
-    //             scales: {
-    //                 yAxes: [{
-    //                     ticks: {
-    //                         beginAtZero:true
-    //                     }
-    //                 }]
-    //             }
-    //         }
-    //     });
-    // }
 
-    // var phd_dashboard = document.getElementById("phd_dashboard");
-    // if (phd_dashboard) new Chart(phd_dashboard.getContext('2d'), {
-    //     type: 'line',
-    //     data: {
-    //         labels: ['李四', '李四', '李四', '李四', '李四', '李四', '李四'],
-    //         datasets: [{
-    //             label: '赞成票得票数',
-    //             backgroundColor: window.chartColors.red,
-    //             borderColor: window.chartColors.red,
-    //             data: [10, 23, 5, 99, 67, 43, 0],
-    //             fill: false,
-    //             pointRadius: 5,
-    //             pointHoverRadius: 10,
-    //             showLine: true // no line shown
-    //         }, {
-    //             label: '反对票得票数',
-    //             backgroundColor: window.chartColors.blue,
-    //             borderColor: window.chartColors.blue,
-    //             data: [5, 0, 15, 1, 22, 32, 87],
-    //             fill: false,
-    //             pointRadius: 5,
-    //             pointHoverRadius: 10,
-    //             showLine: true // no line shown
-    //         }]
-    //     },
-    //     options: {
-    //         responsive: true,
-
-    //         legend: {
-    //             display: true
-    //         },
-    //         elements: {
-    //             point: {
-    //                 pointStyle: 'rectRot'
-    //             }
-    //         }
-    //     }
-    // });
 })
 
 var obj = document.querySelector("#voting_pro_name");
@@ -1039,4 +1041,25 @@ function get_pro_name() {
     });
 
     return user_name;
+}
+
+function gen_phd_id(phd_info) {
+    var id_str = phd_info.name + '_index' + phd_info.index;
+    //console.log(id_str);
+    id_str = id_str.replace(/(\[|\]|\(|\)\{|\}|\||\\|\'|\"|\;|\:|\.|\>|\,|\<|\@|\#|\$|\%|\^|\&|\*|\-|\`|\~|\?|\/|\+|\=| )/g, '_');
+    //console.log(id_str);
+    phd_info.id = id_str;
+    return phd_info;
+}
+
+function update_vote_status() {
+    var obj = $('#pro_voting_summary');
+    const status_text = `投票统计：最大可投赞成票${my_vote_max}
+    已投同意票${my_vote_yes},
+    已投反对票数${my_vote_no}，
+    尚待投票人数${my_vote_remain}`;
+
+    if(obj.text() != status_text) {
+        obj.text(status_text);
+    }
 }

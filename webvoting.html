@@ -2,18 +2,6 @@ $def with (*a, **kw)
 $#var bodyattr= 'class="m4-cloak h-vh-100"'
 $var extrajs = ['assert/js/webvoting.js']
 
-<div class="app-bar pos-relative z-dropdown bg-darkCyan" data-role="appbar" data-expand-point="md">
-    <a href="#" class="brand no-hover bg-white" id="voting_logo">
-        <img src="assert/img/pku.png" width="64">
-    </a>
-    <div class="app-bar-item ml-auto">
-        <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
-    </div>
-    <a href="#" class="app-bar-item ml-auto">
-        <span id="voting_pro_name" class="mif-user fg-white"></span>
-    </a>
-</div>
-
 
 <div class="d-flex flex-justify-center flex-align-center p-1 m-3">
     <div class="row">
@@ -39,41 +27,29 @@ $var extrajs = ['assert/js/webvoting.js']
         </div>
     </div>
 </div>
+
 <div class="d-flex text-center ani-float m-4">
     <button id="pro_voting_summary" class="button alert outline large"><span class="mif-chrome mif-2x"></span>投票统计：已投同意票0, 已投反对票数0，尚待投票人数0</button>
 
 </div>
 <div class="" style="height:500px">
 <div data-role="navview" data-compact="md" data-expand="lg" data-toggle="#pane-toggle" data-active-state="true">
-    <div id="voting_phd_list"  class="navview-pane">
-        <div class="bg-cyan d-flex flex-align-center">
-            <button class="pull-button">
-                <span class="mif-menu"></span>
-            </button>
-            <h3 class="text-light m-0 fg-white pl-7" style="line-height: 52px">博士后列表</h3>
-        </div>
-        <!-- <div class="suggest-box">
-            <input type="text" data-role="input" data-clear-button="false" data-search-button="true"
-            placeholder="输入博士后姓名">
-            <button class="holder">
-                <span class="mif-search"></span>
-            </button>
-        </div> -->
+    <div id="voting_phd_list"  class="navview-pane" style="z-index: 100;">
+        <button class="pull-button">
+            <span class="mif-menu"></span>
+        </button>
         <ul class="navview-menu">
-            <li>
-                <a href="#">
-                    <span class="icon"><span class="mif-user fg-red"></span></span>
-                    <span class="caption">Apps</span>
-                </a>
-            </li>
             <li class="item-separator"></li>
         </ul>
 
 
     </div>
-    <div id="voting_phd_detail" class="navview-content">
-        <span id="pane-toggle">Hello</span>
 
+    <div id="voting_phd_detail" class="navview-content">
+        <h3 class="text-light pl-4-md pr-4-md" >
+            <button id="pane-toggle" class="button square d-none-md"><span class="mif-menu" ></span></button>
+            博士后资料
+        </h3>
     </div>
 </div>
 </div>
@@ -142,13 +118,3 @@ $var extrajs = ['assert/js/webvoting.js']
     </div>
 </div> -->
 
-<hr>
-<footer>
-    <div class="bg-cyan  fg-white">
-        <ul class=" group-list horizontal">
-            <li> <span class="mif-copyright"></span> 2021 PostDocVoting - 北京大学博雅博士后投票系统</li>
-            <li>开发者：He Hao, Gao Peng</li>
-            <li>版本号：1.0.17 202103</li>
-        </ul>
-    </div>
-</footer>
