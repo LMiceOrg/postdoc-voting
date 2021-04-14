@@ -18,7 +18,7 @@ cur_path = os.path.dirname(os.path.abspath(__file__))
 if len(sys.argv) >2:
     cur_path= os.path.abspath(sys.argv[2])
 
-sys.path.append( os.path.dirname( os.path.abspath(__file__) ) )
+#sys.path.append( os.path.dirname( os.path.abspath(__file__) ) )
 
 up_path = os.path.dirname(os.path.dirname(cur_path))
 print ('cur_path:', cur_path)
@@ -44,10 +44,10 @@ urls=(
 ctx=dict()
 
 dt = globals()
-try:
-    dt.pop('webvoting')
-except:
-    pass
+# try:
+#     dt.pop('webvoting')
+# except:
+#     pass
 
 def validate_header():
     print("set to text/html")

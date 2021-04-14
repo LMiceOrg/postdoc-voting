@@ -510,7 +510,7 @@ class VotingManager(object):
     def update_vote(self, msg):
         pro_name = msg.get('pro_name')
         phd_name = msg.get('phd_name')
-        vote = msg.get('vote')
+        vote = int(msg.get('vote'))
 
         if self.voting_status != 1:
             return {'type':'error', 'error':'投票未开始'}
@@ -528,12 +528,17 @@ class VotingManager(object):
                 pro['result']=[]
             result=pro['result']
             find_result = False
+            vote_yes_count = 0
             for item in result:
-                if  item['phd_name'] != phd_name:
-                    continue
-                find_result = True
-                item['vote'] = vote
-                break
+                if item['vote'] == 1:
+                    vote_yes_count += 1
+            if vote_yes_count == self.max_pro_num and vote == 1:
+                return {'type':'error', 'error':'你已经达到本次项目赞成票最大值，无法继续投赞成票'}
+            for item in result:
+                if  item['phd_name'] == phd_name:
+                    find_result = True
+                    item['vote'] = vote
+                    break
             if not find_result:
                 item ={}
                 item['phd_name'] = phd_name

@@ -876,7 +876,6 @@ $(()=>{
                                 }
                                 mif.removeClass('mif-tablet mif-cross mif-checkmark fg-red fg-orange fg-green')
                                 mif.addClass('fg-green mif-checkmark');
-                                my_vote_yes += 1;
                                 req.vote = 1;
                                 ws.send(JSON.stringify(req));
 
@@ -885,9 +884,6 @@ $(()=>{
                             } else if(!action_yes && !cur_no) {
                                 mif.removeClass('mif-tablet mif-cross mif-checkmark fg-red fg-orange fg-green')
                                 mif.addClass('fg-red mif-cross');
-                                my_vote_yes -= 1;
-                                if(my_vote_yes < 0)
-                                    my_vote_yes = 0;
                                 req.vote = 2;
                                 ws.send(JSON.stringify(req));
 
@@ -904,7 +900,9 @@ $(()=>{
                 }
 
                 //我的投票状态已经改变，更新投票状态
-                if(json_2 != phd_voting_data) {
+                //if(json_2 != phd_voting_data)  //总是更新
+                if(true)
+                {
 
                     phd_voting_data = json_2;
 
@@ -1053,6 +1051,9 @@ function gen_phd_id(phd_info) {
 }
 
 function update_vote_status() {
+    my_vote_yes=$('ul.navview-menu li a span span.fg-green').length;
+    my_vote_no=$('ul.navview-menu li a span span.fg-red').length;
+    my_vote_remain =$('ul.navview-menu li a span span.fg-orange').length;
     var obj = $('#pro_voting_summary');
     const status_text = `投票统计：最大可投赞成票${my_vote_max}
     已投同意票${my_vote_yes},
