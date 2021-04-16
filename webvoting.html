@@ -3,16 +3,33 @@ $#var bodyattr= 'class="m4-cloak h-vh-100"'
 $var extrajs = ['assert/js/webvoting.js']
 
 
+<div class="app-bar pos-relative z-dropdown bg-green" data-role="appbar" data-expand-point="md">
+    <a href="#" class="brand no-hover border bd-cyan bg-white" id="voting_logo">
+        <img src="assert/img/pku.png" width="64">
+    </a>
+    <div class="app-bar-item ml-auto">
+        <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
+    </div>
+    <a href="#" id="voting_done" class="app-bar-item ml-auto" data-role="hint" data-hint-text="点击完成投票" data-hint-position="bottom">
+      <h4 class="fg-red m-0 text-bold">提交结果</h4>
+    </a>
+
+    <a href="logout.html" class="app-bar-item " data-role="hint" data-hint-text="退出登录" data-hint-position="bottom">
+        <span id="voting_pro_name" class="mif-cross fg-white"></span>
+    </a>
+  </div>
+
+<!--
 <div class="d-flex flex-justify-center flex-align-center p-1 m-3">
     <div class="row">
         <div class="cell-lg-4">
             <div class="p-2 clear">
                 <div class="tiles-grid tiles-group size-3">
-<!--
+
                     <a href="dashboard.html" data-role="tile" class="bg-indigo">
                         <span class="mif-chart-bars icon"></span>
                         <span class="branding-bar">投票状态</span>
-                    </a> -->
+                    </a>
                     <a href="logout.html" data-role="tile" class="bg-orange">
                         <span class="mif-user-minus icon"></span>
                         <span class="branding-bar">退出登录</span>
@@ -27,13 +44,14 @@ $var extrajs = ['assert/js/webvoting.js']
         </div>
     </div>
 </div>
+-->
 
 <div class="d-flex text-center ani-float m-4">
     <button id="pro_voting_summary" class="button alert outline large"><span class="mif-chrome mif-2x"></span>投票统计：已投同意票0, 已投反对票数0，尚待投票人数0</button>
 
 </div>
 <div class="" style="height:500px">
-<div data-role="navview" data-compact="md" data-expand="lg" data-toggle="#pane-toggle" data-active-state="true">
+<div data-role="navview" data-compact="sm" data-expand="sm" data-toggle="#pane-toggle" data-active-state="true">
     <div id="voting_phd_list"  class="navview-pane" style="z-index: 100;">
         <button class="pull-button">
             <span class="mif-menu"></span>

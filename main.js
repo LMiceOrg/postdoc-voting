@@ -65,10 +65,15 @@ function createWindow() {
     mainWindow = null
   })
 
+  var io_method = ['ipc'];
+  if(process.platform == 'darwin') {
+    io_method = 'inherit';
+  }
+
   if (ctlvoting == null) {
     let script = path.join(__dirname, 'dist', 'ctlvoting', 'ctlvoting');
     ctlvoting = subprocess(script, [ws_port, __dirname], {
-      stdio: ['ipc'],
+      stdio: io_method,
       windowsHide: true,
       shell: false
     });
@@ -80,21 +85,23 @@ function createWindow() {
       }
       console.log("ctlvoting exit.");
     });
+    if(io_method != 'inherit') {
+      ctlvoting.stdout.on('data', (data) => {
+        console.log('ctlvoting out:', data.toString());
+      })
 
-    ctlvoting.stdout.on('data', (data) => {
-      console.log('ctlvoting out:', data.toString());
-    })
+      ctlvoting.stderr.on('data', (data) => {
+        console.log('ctlvoting err:', data.toString());
+      })
+    }
 
-    ctlvoting.stderr.on('data', (data) => {
-      console.log('ctlvoting err:', data.toString());
-    })
   }
 
 
   if (webvoting == null) {
     let script = path.join(__dirname, 'dist', 'webvoting', 'webvoting');
     webvoting = subprocess(script, [web_port, __dirname], {
-      stdio: ['ipc'],
+      stdio: io_method,
       windowsHide: true,
       shell: false
     });
@@ -103,14 +110,15 @@ function createWindow() {
     webvoting.on('exit', (code) => {
       console.log("webvoting exit.");
     });
+    if(io_method != 'inherit') {
+      webvoting.stdout.on('data', (data) => {
+        console.log('webserver out:', data.toString());
+      });
 
-    webvoting.stdout.on('data', (data) => {
-      console.log('webserver out:', data.toString());
-    });
-
-    webvoting.stderr.on('data', (data) => {
-      console.log('webserver err:', data.toString());
-    })
+      webvoting.stderr.on('data', (data) => {
+        console.log('webserver err:', data.toString());
+      })
+    }
   }
 
   //dialog.showErrorBox("process", "${py.killed()}");
@@ -284,6 +292,7 @@ ipc.on('genpro', (ev, arg) => {
       defaultPath: '/Users/hehao/work/bj_rtlib/voting/doc',
       title: '请导出专家列表Excel',
       message: '专家列表Excel文件',
+      defaultPath:'北京大学博雅博士后项目-专家列表',
       filters: [{
         name: 'Excel',
         extensions: ['xls', 'xlsx']
@@ -395,7 +404,6 @@ ipc.on("votingman", (ev, arg) => {
 
     let req = {}
     req.method = method;
-    req.gen_json = 1;
 
     ws.send(JSON.stringify(req));
 

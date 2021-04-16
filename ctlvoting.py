@@ -15,6 +15,7 @@ import asyncio
 import websockets
 import json
 import socket
+import traceback
 
 
 
@@ -82,7 +83,9 @@ async def recv_msg(ws):
             msg = json.loads(recv_text)
             #print(msg)
             await proc_msg(ws, msg)
-        except:
+        except Exception as e:
+            #print(e)
+            traceback.print_exc()
             ret = {'type':'error'}
             await ws.send(json.dumps(ret))
 
@@ -90,7 +93,9 @@ async def main_logic(websocket, path):
     try:
         await recv_msg(websocket)
     except:
-        print("recv_msg failed")
+        pass
+        #print("recv_msg failed")
+        #traceback.print_exc()
 
 ws_server = websockets.serve(main_logic, ws_ip, ws_port)
 

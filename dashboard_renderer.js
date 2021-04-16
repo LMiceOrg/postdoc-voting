@@ -318,18 +318,21 @@ ipc.on('dashboard', (ev, ret) => {
             data.header.push({name:'cls', title:'院系',size:150, sortable:true, sortDir:'asc', cls:'bg-cyan fg-white text-center', clsColumn:'bg-cyan fg-white text-center'});
 
             var real_pro_list={}
-            ret.pro_list.forEach( (pro, idx) =>{
+            //console.log(ret.voting_data);
+            ret.voting_data.forEach((pro_voting, idx)=>{
                 const fake_pro_name = '专家' + (idx+1);
-                real_pro_list[pro[1]] = idx + 3;
                 data.header.push({name:'pro'+idx, title:fake_pro_name,size:150, sortable:true, sortDir:'asc'});
             });
 
+            // ret.pro_list.forEach( (pro, idx) =>{
+            //     const fake_pro_name = '专家' + (idx+1);
+            //     real_pro_list[pro[1]] = idx + 3;
+            //     data.header.push({name:'pro'+idx, title:fake_pro_name,size:150, sortable:true, sortDir:'asc'});
+            // });
+
             // 生成数据
             data.data =[];
-            var real_phd_dict={};
             ret.phd_list.forEach( (phd,idx)=>{
-                real_phd_dict[phd[2]] = idx;
-
                 const id = idx+1;
                 item = [];
                 item.push(id);
@@ -342,28 +345,18 @@ ipc.on('dashboard', (ev, ret) => {
             });
 
             //遍历投票结果
-            ret.voting_data.forEach((pro_voting)=>{
-                if('result' in pro_voting) {
-                    const col = real_pro_list[pro_voting.pro_name];
-                    //console.log(col);
-                    if(col !== undefined) {
-                        pro_voting.result.forEach((phd_voting)=>{
-                            //phd_voting.vote == 1? 1:0;
-                            var vote='<div class="bg-green w-100 m-0 p-0 text-center">同意</div>';
-                            if(phd_voting.vote != 1) {
-                                vote = '<div class="bg-red w-100 m-0 p-0 text-center">不同意</div>';
-                            }
-                            const row = real_phd_dict[phd_voting.phd_name];
-                            //console.log(row);
-                            if( row !== undefined) {
-                                console.log(data.data[row][col])
-                                data.data[row][col] = vote; //更新数据
-                                console.log(row, col, vote);
-                            }
-
-                        });
+            ret.voting_data.forEach((pro_voting, pro_idx)=>{
+                const col = pro_idx +3;
+                //console.log(col);
+                pro_voting.result.forEach((phd_voting, phd_idx)=>{
+                    const row = phd_idx;
+                    //phd_voting.vote == 1? 1:0;
+                    var vote='<div class="bg-green w-100 m-0 p-0 text-center">同意</div>';
+                    if(phd_voting.vote != 1) {
+                        vote = '<div class="bg-red w-100 m-0 p-0 text-center">不同意</div>';
                     }
-                }
+                    data.data[row][col] = vote; //更新数据
+                });
             });
 
             var json_2 = JSON.stringify(data);

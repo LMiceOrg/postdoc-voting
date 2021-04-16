@@ -35,6 +35,7 @@ urls=(
     '/login[^/]*',  'login',
     '/logout[^/]*', 'logout',
     '/voting[^/]*', 'voting',
+    '/done[^/]*', 'finish',
     # '/dashboard[^/]*', 'home',
     # '.*', 'home'
     '.*', 'voting'
@@ -167,7 +168,7 @@ class static_assert:
         print(name, pre, text)
         if name[-4:] == '.css':
             #pass
-            print('set to text/css')
+            #print('set to text/css')
             web.header('Content-Type', 'text/css')
         elif name[-4:].lower() in ('.jpg', '.png', '.bmp','.gif'):
             tp = 'image/' + name[-3:].lower()
@@ -203,7 +204,15 @@ class logout:
         web.webapi.setcookie('pro_name', '', expires= -1)
         return web.seeother('/login')
 
+class finish:
+    @trace_error
+    @asyncio_enable
+    @check_auth
+    def GET(self):
+        return render.webdone()
+
 class login:
+
     @trace_error
     def GET(self):
         if 'error' in ctx.keys():

@@ -22,7 +22,11 @@ let my_vote_no
 // 当前未投票数
 let my_vote_remain
 
+// 专家名称 （real）
 let my_name
+
+// 专家登录名称
+let my_login_name
 
 function refresh_data() {
     var req={}
@@ -38,7 +42,7 @@ function refresh_data() {
     // }
     //console.log(uri);
 
-    my_name = get_pro_name();
+    update_pro_name();
 
     ws.send(JSON.stringify(req))
 
@@ -56,7 +60,10 @@ $(()=>{
     ws.onmessage = (ev)=>{
         //console.log(ev.data)
         ret = JSON.parse(ev.data)
-        if(ret.type == 'error') {
+        if(ret == null)
+            return;
+        //console.log(ret)
+        if (ret.type !== undefined && ret.type == 'error') {
             // popup error message
             var notify = Metro.notify;
             var msg = ret.error;
@@ -625,6 +632,12 @@ $(()=>{
                     content.children('div').remove();
 
                     // 2. 重新生成菜单 和内容
+                    var menu_template=`
+                    <li  class="item-header"><a href="#" id="menu_checkbox_clear" class="fg-blue">清除选择</a></li>
+                    `;
+                    var menu_item = $(menu_template);
+                    menu_item.appendTo(menu);
+
                     ret.phd_list.forEach((phd,idx) =>{
                         var phd_info={
                             index:idx,
@@ -662,6 +675,7 @@ $(()=>{
                         <div class="cell-2">${phd_info.credit}</div>
                         -->
                         </div>
+
                         <!--
                         <div class="row">
                         <div class="cell-1 bg-gray">推荐顺序</div>
@@ -674,20 +688,30 @@ $(()=>{
                         <div class="cell-2">${phd_info.teacher2}</div>
                         </div>
                         -->
+
                         <div class="row border no-gap">
+
                         <!--
                         <div class="cell-1 border bg-lightGray">学位授予机构</div>
                         <div class="cell-1 border ">${phd_info.org}</div>
                         -->
+
+                        <!--
                         <div class="cell-1 border bg-lightGray">目前所属单位</div>
                         <div class="cell-2 border ">${phd_info.org2}</div>
                         <div class="cell-2 border bg-lightGray">所属一级学科</div>
                         <div class=" ">${phd_info.class}</div>
+                        -->
+
                         </div>
+
+                        <!--
                         <div class="row">
                         <div class="cell-1 bg-lightGray">详细信息</div>
                         <div class="p-6">${phd_info.detail}</div>
                         </div>
+                        -->
+
                         </div>
                         `;
 
@@ -695,14 +719,14 @@ $(()=>{
                             <button class="command-button icon-right success m-1">
                                 <span class="mif-checkmark icon"></span>
                                 <span class="caption">
-                                    同意，推荐给予${phd_info.name}博雅博士后项目资助
+                                    同意
                                     <small>单击更改推荐结果</small>
                                 </span>
                             </button>
-                            <button class="command-button icon-right secondary m-1 ">
+                            <button class="command-button icon-right alert m-1 ">
                                 <span class="mif-cross icon"></span>
                                 <span class="caption">
-                                    不同意，拒绝给予${phd_info.name}博雅博士后项目资助
+                                    不同意
                                     <small>单击更改推荐结果</small>
                                 </span>
                             </button>
@@ -718,7 +742,7 @@ $(()=>{
                             ${phd_detail}
                             </div>
                             <div data-role="panel"
-                            data-title-caption="博士后投票"
+                            data-title-caption="是否推荐给予${phd_info.name}博雅博士后项目资助"
                             data-collapsible="false"
                             data-cls-title="bg-gray fg-white"
                             data-cls-title-icon="bg-cyan"
@@ -766,9 +790,10 @@ $(()=>{
                         const menu_template = `
                         <li>
                             <a href="#" name="${phd_info.id}" real_name="${encodeURI(phd_info.name)}">
-                                <span class="icon"> <span class="${mif_class}" ></span> </span>
-                                <span class="caption"> ${phd_info.name}
 
+                                <span class="icon"> <input type="checkbox"><span class="${mif_class}" ></span> </span>
+                                <span class="caption">
+                                    ${phd_info.name}
                                 </span>
                                 <div class="badges">
                                 <span class="badge inline">${phd_info.college}</span>
@@ -776,8 +801,7 @@ $(()=>{
                                 </div>
                             </a>
                          </li>
-                         <li class="item-separator">
-                         </li>
+                         <li class="item-separator"></li>
                          `
                          //console.log(template)
                          var menu_item = $(menu_template);
@@ -822,23 +846,115 @@ $(()=>{
                     calcMenuHeight(menu, menu_container);
 
                     // 4. 绑定按钮事件
-                    $('button.command-button').on('click', 'span.caption', (e)=>{
+                    $('button.command-button').on('click', (e)=>{
                         var button = $(e.target);
                         var action_yes = false;
+                        var req={};
+                        req.method="votingman";
+                        req.update_vote=1;
+                        req.pro_name = my_name;
+                        req.user_name = my_login_name
 
 
+                        // 1. 判断当前操作类型 同意， 不同意
                         while(button !== undefined) {
+                            console.log(button.prop('tagName'));
                             if(button.prop('tagName') == 'BUTTON') {
                                 action_yes = button.hasClass('success');
                                 break;
                             }
+
                             button = button.parent();
                         }
 
-                        //找不到按钮
+                        // 找不到按钮
                         if(button === undefined) {
                             return;
                         }
+
+                        // 2. 判断是否多选
+                        const batch = $('span.icon input[type="checkbox"]:checked');
+                        if(batch.length > 0) {
+                            // 2.1. 统计当前选择
+                            var count_cur_yes = 0;
+                            var count_cur_no = 0;
+                            const anchor_list = batch.parent().parent();
+                            anchor_list.each((idx, oanchor)=>{
+                                const phd_id = oanchor.getAttribute('name');
+                                const anchor = $(oanchor);
+                                const phd_name =decodeURI( anchor.attr('real_name') );
+                                var mif = anchor.children('span.icon').children('span');
+                                var cur_yes = mif.hasClass('fg-green');
+                                var cur_no = mif.hasClass('fg-red');
+
+                                if(!cur_yes) {
+                                    count_cur_yes += 1;
+                                }
+
+                                if(!cur_no) {
+                                    count_cur_no += cur_no;
+                                }
+
+
+                                console.log(phd_name,  phd_id);
+                            });
+
+                            // 2.2. 判断赞成票最大值
+                            if (action_yes) {
+                                if(my_vote_yes+count_cur_yes > my_vote_max) {
+                                    Metro.dialog.create({
+                                        title: "您的选择超过本次项目赞成票最大值",
+                                        content: `<div class="mt-2 p-2">
+                                        <h5>本次会议每位专家最大推荐名额: ${my_vote_max} </h5>
+                                        </div>`,
+                                        closeButton: true,
+                                        actions: [
+                                            {
+                                                caption: "确定",
+                                                cls: "js-dialog-close alert"
+                                            }
+                                        ]
+                                    });
+                                    return;
+                                }
+                            }
+
+                            if(action_yes)
+                                req.vote = 1;
+                            else
+                                req.vote = 2;
+
+                            anchor_list.each((idx, oanchor)=>{
+                                const phd_id = oanchor.getAttribute('name');
+                                const anchor = $(oanchor);
+                                const phd_name =decodeURI( anchor.attr('real_name') );
+                                var mif = anchor.children('span.icon').children('span');
+                                var cur_yes = mif.hasClass('fg-green');
+                                var cur_no = mif.hasClass('fg-red');
+
+                                req.phd_name = phd_name;
+                                req.phd_id = phd_id;
+
+                                if(action_yes && !cur_yes) {
+                                    mif.removeClass('mif-tablet mif-cross mif-checkmark fg-red fg-orange fg-green')
+                                    mif.addClass('fg-green mif-checkmark');
+                                    ws.send(JSON.stringify(req));
+                                    update_vote_status();
+                                } else if(!action_yes && !cur_no) {
+                                    mif.removeClass('mif-tablet mif-cross mif-checkmark fg-red fg-orange fg-green')
+                                    mif.addClass('fg-red mif-cross');
+                                    ws.send(JSON.stringify(req));
+                                    update_vote_status();
+                                }
+
+
+                            });
+                            console.log('button action + ', batch.length);
+                            batch.prop('checked', false);
+                            return;
+                        }
+
+                        // 3. 无多选，进入当前对象操作
 
                         const phd_obj = button.parent().parent().parent();
                         const phd_id = phd_obj.attr('id');
@@ -855,7 +971,9 @@ $(()=>{
                             req.method="votingman";
                             req.update_vote=1;
                             req.pro_name = my_name;
+                            req.user_name = my_login_name
                             req.phd_name = phd_name;
+                            req.phd_id = phd_id;
 
                             if(action_yes && !cur_yes) {
                                 if(my_vote_yes + 1 > my_vote_max) {
@@ -894,6 +1012,11 @@ $(()=>{
                         }
 
                     });
+
+                    $('#menu_checkbox_clear').on('click', (e)=>{
+                        $('span.icon input[type="checkbox"]:checked').prop('checked', false);
+                    });
+
                     return;
 
 
@@ -963,22 +1086,24 @@ $(()=>{
 
 
             Metro.dialog.create({
-                title: '完成全部投票',
-                content: '<div>请确认是否完成全部投票?</div><hr>' +
+                title: '提交投票结果',
+                content: '<div>请确认是否完成投票?</div><hr>' +
                      '<h4 class="fg-green">'+vote_yes +'票赞成</h4>' +
                     '<h4 class="fg-red">'+vote_no+ '票反对</h4>' +
                     '<h4 class="fg-orange">'+vote_remain + '票剩余</h4>',
                 actions: [
                     {
-                        caption: "提交结果",
+                        caption: "确认提交",
                         cls: "js-dialog-close success",
                         onclick: function(){
                             req = {}
                             req.method='votingman';
                             req.finish_vote=1;
                             req.pro_name = my_name;
+                            req.user_name = my_login_name;
 
                             ws.send(JSON.stringify(req));
+                            window.location.href = "done.html";
                         }
                     },
                     {
@@ -1014,7 +1139,7 @@ if(obj) {
     var cookie = document.cookie;
     var ca = cookie.split(';');
     var user_name = ''
-    console.log(cookie);
+    // console.log(cookie);
     ca.forEach((it) =>{
         var item = it.trimLeft();
         if(item.indexOf('user_name=') == 0) {
@@ -1025,20 +1150,21 @@ if(obj) {
     obj.innerText = user_name
 }
 
-function get_pro_name() {
+
+
+function update_pro_name() {
     var cookie = document.cookie;
     var ca = cookie.split(';');
-    var user_name = ''
     //console.log(cookie);
     ca.forEach((it) => {
         var item = it.trimLeft();
         if (item.indexOf('pro_name=') == 0) {
             //console.log()
-            user_name = decodeURIComponent(item.substr(9));
+            my_name = decodeURIComponent(item.substr(9));
+        } else if (item.indexOf('user_name=') == 0) {
+            my_login_name = decodeURIComponent(item.substr(10));
         }
     });
-
-    return user_name;
 }
 
 function gen_phd_id(phd_info) {

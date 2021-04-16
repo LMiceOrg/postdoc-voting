@@ -4,7 +4,10 @@
 # Date: 2021-3-20
 import os
 import sys
+import enum
 import json
+import urllib
+
 from mailmerge import MailMerge
 
 import xlutils
@@ -18,15 +21,178 @@ from datetime import date
 import time
 import hashlib
 
+
 from base_config import Config
 
 cur_path = os.path.dirname(os.path.abspath(__file__))
 if len(sys.argv) > 2:
     cur_path= os.path.abspath(sys.argv[2])
 
+class XlReader(object):
+    def __init__(self):
+        self.ctx=dict()
+
+    def clear(self):
+        self.ctx=dict()
+
+    def load_xls(self, name):
+        print('xlreader load')
+        try:
+            book = xlrd.open_workbook(name)
+
+            ctx=dict()
+            for i in range(book.nsheets):
+                s = book.sheet_by_index(i)
+                sname = s.name
+                svalue = list()
+                for r in range(s.nrows):
+                    svalue.append( s.row_values(r) )
+                ctx[i] = (sname, svalue)
+
+            self.ctx = ctx
+        except:
+            print("Open Excel(%s) failed!" % name)
+
+class ProListManager(XlReader):
+    xl_name_cols=dict(
+        org=0,
+        name=1,
+        gender=2,
+        title=6,
+        first_class=7,
+        plan=9,
+        phone=10,
+        email=11,
+        id=12
+    )
+    def __init__(self):
+        super().__init__()
+
+        self.col_limit = max(self.xl_name_cols.values()) + 1
+        self.cols = 0
+        self.rows = 0
+        self.key = []
+        #print('pro list manager')
+        #print(self.__dict__)
+
+    def get_row(self, row):
+        if row < self.rows:
+            data = self.raw_data()
+            return data[row]
+        else:
+            return []
+    def get_name(self, row):
+        if row < self.rows:
+            data = self.raw_data()
+            col_name = self.xl_name_cols['name']
+            return data[row][col_name]
+        else:
+            return ''
+    def raw_data(self):
+        ctx = self.ctx
+        if 0 in ctx.keys():
+            #sheet index(0),  sheet value(1), rows start from(2)
+            return ctx[0][1][2:]
+        else:
+            return list()
+
+    def load(self, name):
+        self.load_xls(name)
+
+        data = self.raw_data()
+
+        self.cols = 0
+        self.key = []
+        self.rows = len(data)
+
+        if self.rows > 0:
+            self.cols = len(data[0])
+
+            col_name = self.xl_name_cols['name']
+            for i in range(self.rows):
+                key = data[i][col_name] + '__' + str(i)
+                value = urllib.parse.quote(key)
+                self.key.append(value)
+
+
+
+    def __getattr__(self, name):
+        data = self.raw_data()
+        if name in self.xl_name_cols:
+            col = self.xl_name_cols[name]
+            values=list()
+            for i in range(len(data)):
+                values.append( data[i][col] )
+            return values
+
+
+class PhdListManager(XlReader):
+    xl_name_cols=dict(
+        order = 0,
+        college_order = 1,
+        name = 2,
+        birthday = 3,
+        phd_date = 4,
+        title=5,
+        teacher=6,
+        teacher2=7,
+        phd_org=8,
+        org =9,
+        reward = 10,
+        first_class=11,
+        college = 12)
+
+    def raw_data(self):
+        ctx = self.ctx
+        if 0 in ctx.keys():
+            #sheet index(0),  sheet value(1), rows start from(2)
+            return ctx[0][1][2:]
+        else:
+            return list()
+
+    def __init__(self):
+        super().__init__()
+
+        self.col_limit = max(self.xl_name_cols.values()) + 1
+        self.cols = 0
+        self.rows = 0
+        self.key=[]
+
+    def load(self, name):
+        self.load_xls(name)
+
+        data = self.raw_data()
+
+        self.cols = 0
+        self.key = []
+        self.rows = len(data)
+
+        if self.rows > 0:
+            self.cols = len(data[0])
+
+            col_name = self.xl_name_cols['name']
+            for i in range(self.rows):
+                key = data[i][col_name] + '__' + str(i)
+                value = urllib.parse.quote(key)
+                self.key.append(value)
+
+    def __getattr__(self, name):
+        data = self.raw_data()
+
+        if name in self.xl_name_cols:
+            col = self.xl_name_cols[name]
+            values=list()
+            for i in range(len(data)):
+                values.append( data[i][col] )
+                #print(data[i][col])
+            return values
+
 
 class VotingManager(object):
     def __init__(self):
+        self.phd_list = PhdListManager()
+        self.pro_list = ProListManager()
+
         self.pro_data = None
         self.phd_data = None
         self.pro_excel = None
@@ -50,6 +216,11 @@ class VotingManager(object):
 
         self.get_pro_json()
 
+    def reset_vote(self):
+        self.max_pro_num = 0
+        self.voting_data = []
+        self.voting_status = 0
+
     def proc_msg(self, msg):
 
         ret = {
@@ -59,7 +230,12 @@ class VotingManager(object):
 
         gen_json = False
 
-        #dashboard
+        #done: webdone
+        done = msg.get('done')
+        if done:
+            return self.gen_done(msg)
+
+        #dashboard: webvoting
         dashboard = msg.get('dashboard')
         if dashboard:
             return self.gen_dashboard()
@@ -70,12 +246,12 @@ class VotingManager(object):
             return self.gen_voting()
 
         #update_vote : webvoting
-        update_vote = msg.get('update_vote');
+        update_vote = msg.get('update_vote')
         if(update_vote):
             return self.update_vote(msg)
 
         #finish_vote : webvoting 完成投票
-        finish_vote = msg.get('finish_vote');
+        finish_vote = msg.get('finish_vote')
         if(finish_vote):
             return self.finish_vote(msg)
 
@@ -93,7 +269,7 @@ class VotingManager(object):
                 if key in self.login_pros.keys():
                     self.login_pros.pop(key)
                 #print('type failed')
-                return {"method":"challenge", 'type':'failed'}
+                return {"method":"challenge", 'type':'error', 'error':'challenge failed'}
 
         #login ：webvoting 登录页面
         login = msg.get('login')
@@ -102,10 +278,10 @@ class VotingManager(object):
             user_id = msg.get('user_id')
             ip_addr= msg.get('ip_addr')
             if self.check_pro(user_name, user_id):
-                user_pos = -1
+                pro_name = user_name
                 if user_name[:2] == '专家':
                     user_pos = int(user_name[2:]) -1
-                pro_name = self.pro_data[0][1][2:] [user_pos][1]
+                    pro_name = self.pro_list.get_name(user_pos)
                 item = Config()
                 item.user_name = user_name
                 item.user_id = user_id
@@ -146,39 +322,86 @@ class VotingManager(object):
         status = msg.get("status")
         if status:
             gen_json = True
+            print("voting status: ", status)
             self.voting_status = int(status)
             self.pro_json['voting_status'] = self.voting_status
             if self.voting_status == 1:
+                print('status 1')
                 self.voting_start_time = time.time()
                 self.max_pro_num = int(msg.get("max_pro_num"))
                 self.voting_stop_time = None
+                # fix 20210416 init voting status = 2
+                if self.phd_list.rows == 0 or self.pro_list.rows == 0:
+                    return {'method':'votingman', 'type':'error', 'error':'无投票数据，无法开始投票'}
+
+                phd_names = self.phd_list.name
+                phd_keys = self.phd_list.key
+                pro_names = self.pro_list.name
+                pro_keys = self.pro_list.key
+
+                self.voting_data=[]
+                for pro_idx in range(self.pro_list.rows):
+                    result=[]
+                    for phd_idx in range(self.phd_list.rows):
+                        phd = dict(phd_name = phd_names[phd_idx],
+                            phd_key = phd_keys[phd_idx],
+                            vote = 2) #默认反对票
+                        result.append(phd)
+
+                    pro = dict(pro_name = pro_names[pro_idx],
+                        pro_key = pro_keys[pro_idx],
+                        voting_status = 0, #未开始
+                        result = result)
+
+                    self.voting_data.append(pro)
             elif self.voting_status == 2:
                 self.voting_stop_time = time.time()
             # update pro's voting status
             for pro in self.voting_data:
-                if 'voting_status' in pro.keys():
-                    pro['voting_status'] = self.voting_status
+                pro['voting_status'] = self.voting_status
+            print(self.voting_data)
 
         phd_file = msg.get('phd_file')
         if phd_file:
             gen_json = True
             self.phd_excel = phd_file
-            self.pro_json['phd_file'] = phd_file
-            #print('phd_file', phd_file)
-            self.phd_data = self.read_xls(phd_file)
+            self.pro_json['phd_file'] = os.path.split(phd_file)[1]
+
+            #print('begin phd load')
+            self.phd_list.load(phd_file)
+            #print('load phd list ',self.phd_list.col_limit, ' cols:', self.phd_list.cols)
+            if self.phd_list.cols < self.phd_list.col_limit or self.phd_list.rows < 1:
+                self.phd_list.clear()
+
+                ret['type'] = 'error'
+                ret['error'] = '博士后Excel 文件格式不正确, 行{} 列{}'.format(self.phd_list.cols, self.phd_list.rows )
+                return ret
+
+
+            print(self.phd_list.key)
+
+
             #重置投票状态
-            self.voting_data=[]
-            self.voting_status= 0
+            self.reset_vote()
 
         pro_file = msg.get('pro_file')
         if pro_file:
             gen_json = True
             self.pro_excel = pro_file
-            self.pro_json['pro_file'] = pro_file
-            self.pro_data = self.read_xls(pro_file)
+            self.pro_json['pro_file'] = os.path.split(pro_file)[1]
+            self.pro_list.load(pro_file)
+            print('load pro list')
+            print(self.pro_list.key)
+            if self.pro_list.cols < self.pro_list.col_limit or self.pro_list.rows < 1:
+                self.pro_list.clear()
+
+                ret['type'] = 'error'
+                ret['error'] = '专家Excel 文件格式不正确, 行{} 列{}'.format(self.phd_list.cols, self.phd_list.rows )
+                return ret
+
             #重置投票状态
-            self.voting_data=[]
-            self.voting_status= 0
+            self.reset_vote()
+
 
         if gen_json:
             self.pro_json = self.gen_pro_json()
@@ -192,20 +415,11 @@ class VotingManager(object):
         ret['now'] = '{:%Y年%m月%d日 星期%w}'.format(date.today())
         ret['today'] = '{:%Y年-%m月-%d日}'.format(date.today())
 
-        pro_list = None
-        pro_count = 0
 
-        if self.pro_data != None:
-            if 0 in self.pro_data.keys():
-                pro_list = self.pro_data[0][1][2:]
-                pro_count = len(pro_list)
+        pro_count = self.pro_list.rows
 
-        phd_list = None
-        phd_count = 0
-        if self.phd_data != None:
-            if 0 in self.phd_data.keys():
-                phd_list = self.phd_data[0][1][2:]
-                phd_count = len(phd_list)
+        phd_count = self.phd_list.rows
+
 
         ret['pro_count'] = str(pro_count)
         ret['phd_count'] = str(phd_count)
@@ -216,43 +430,47 @@ class VotingManager(object):
 
         phd_result=[]
 
-        for i in range(phd_count):
-            # yes, no
-            phd_result.append([0,0, phd_list[i][2]])
+        phd_keys = self.phd_list.key
+        phd_names = self.phd_list.name
+
+        for idx in range(phd_count):
+            # yes, no, name, key
+            name = phd_names[idx]
+            key = phd_keys[idx]
+            phd_result.append([0, 0, name, key])
 
         for pro_voting in self.voting_data:
             if 'result' not in pro_voting:
                 continue
             for phd_vote in pro_voting['result']:
                 name = phd_vote['phd_name']
-                vote_no = 0
-                vote_yes = 0
-                if phd_vote['vote'] == 1 :
-                    vote_yes = 1
-                if phd_vote['vote'] == 2:
-                    vote_no = 1
+                key = phd_vote['phd_key']
+                #print('key', key)
+                pos = key.rfind('__')
+                idx = int(key[pos+2:])
 
-                for i in range(phd_count):
-                    phd_name = phd_list[i][2]
-                    if phd_name == name:
-                        phd_result[i][0] += vote_yes
-                        phd_result[i][1] += vote_no
-                        break
+                vote_idx = 1
+                if phd_vote['vote'] == 1 :
+                    vote_idx = 0
+
+                phd_result[idx][vote_idx] += 1
+
         #结果排序
         print('phd_result', phd_result)
         sort_key = lambda e:e[0]
         phd_result.sort(key=sort_key, reverse=True)
+
         result_count = phd_count
         if self.max_pro_num < phd_count:
             result_count = self.max_pro_num
             #phd_result = phd_result[0:self.max_pro_num]
             #phd_count = self.max_pro_num
-        print('phd_result', phd_result)
+        #print('phd_result', phd_result)
         ret['result_count'] = str(result_count)
 
         voting_result = []
         for i in range(result_count):
-            phd=phd_list[i]
+            #phd=phd_list[i]
             item= dict()
             item['t1_id'] = str(i+1)
             item['t1_name'] = phd_result[i][2]
@@ -261,11 +479,18 @@ class VotingManager(object):
 
             voting_result.append(item)
 
+        voting_remain50=[]
+        # item= dict()
+        # item['t3_id'] = 'a010'
+        # item['t3_name'] = 'phd test'
+        # item['t3_yes'] = '12'
+        # item['t3_no'] = '0'
+        # voting_remain50.append(item)
         voting_remain=[]
         if self.max_pro_num < phd_count:
             for i in range(phd_count - self.max_pro_num):
                 idx = i + self.max_pro_num
-                phd = phd_list[idx]
+                #phd = phd_list[idx]
                 item= dict()
                 item['t2_id'] = str(i+1)
                 item['t2_name'] = phd_result[idx][2]
@@ -273,6 +498,14 @@ class VotingManager(object):
                 item['t2_no'] = str( phd_result[idx][1] )
 
                 voting_remain.append(item)
+
+                if phd_result[idx][0] * 2 >= self.max_pro_num:
+                    item= dict()
+                    item['t3_id'] = str(i+1)
+                    item['t3_name'] = phd_result[idx][2]
+                    item['t3_yes'] = str( phd_result[idx][0] )
+                    item['t3_no'] = str( phd_result[idx][1] )
+                    voting_remain50.append(item)
 
         # t2=list()
         # for i in range(pro_count):
@@ -302,6 +535,7 @@ class VotingManager(object):
         #     t3.append(item)
 
         name = word_name
+        print('name', name)
         name = name.replace('.doc', '').replace('.docx', '')
         name1 =name+ ".doc"
         print('dump word ', name1)
@@ -311,6 +545,7 @@ class VotingManager(object):
             document.merge(**ret)
             document.merge_rows('t1_id', voting_result)
             document.merge_rows('t2_id', voting_remain)
+            document.merge_rows('t3_id', voting_remain50)
             #document.merge_rows('t2_id', t2)
             #document.merge_rows('t3_id', t3)
             document.write(name1)
@@ -339,39 +574,27 @@ class VotingManager(object):
             ctx[i] = (sname, svalue)
         return ctx
 
+    def gen_done(self, msg):
+        user_name = msg.get('user_name')
+        if user_name == None:
+            return {'method':'votingman', 'type':'error', 'error':'用户状态错误，请重新登录'}
+        if user_name[:2] == '专家':
+            user_pos = int(user_name[2:]) -1
+            print(user_pos)
+            data = self.voting_data[user_pos]
+            print(data)
+
+            return dict(voting_status=self.voting_status,
+                result=data['result'])
+        else:
+            return {'method':'votingman', 'type':'error', 'error':'用户状态错误，请重新登录'}
     def gen_pro_json(self):
         #print('gen_pro_json')
         ret = self.pro_json
 
         ret['max_pro_num'] = self.max_pro_num
 
-        pro_list = None
-        pro_count = 0
 
-        if self.pro_data == None:
-            return ret
-
-        if 0 in self.pro_data.keys():
-            pro_list = self.pro_data[0][1][2:]
-            pro_count = len(pro_list)
-            if pro_count == 0:
-                return ret
-            if len(pro_list[0]) < 13:
-                ret['result']['data'][0][1]='专家Excel 文件格式不正确'
-                return ret
-        #print("pro_count", pro_count)
-        phd_list = None
-        phd_count = 0
-        if self.phd_data != None:
-            if 0 in self.phd_data.keys():
-                phd_list = self.phd_data[0][1][2:]
-                phd_count = len(phd_list)
-                if phd_count == 0:
-                    ret['result']['data'][0][2]='请选择博士后Excel'
-                    return ret
-                if len(phd_list[0]) < 11:
-                    ret['result']['data'][0][1]='博士后Excel 文件格式不正确'
-                    return ret
         #print("voting status ", self.voting_status)
         voting_status="未开始"
         if self.voting_status == 1:
@@ -381,30 +604,27 @@ class VotingManager(object):
 
         #print(ret)
         ret['result']['data'].clear()
+        pro_names = self.pro_list.name
 
-        for i in range(pro_count):
+        for idx in range(self.pro_list.rows):
             #print("pro", i)
-            pro = pro_list[i]
-            vote_count = 0
+            #pro = pro_list[i]
+            #vote_count = 0
             vote_yes = 0
+            if len(self.voting_data) > idx:
+                pro_voting = self.voting_data[idx]
+                if pro_voting['voting_status'] == 1:
+                    voting_status = "正在投票"
+                elif pro_voting['voting_status'] == 2:
+                    voting_status = "完成投票"
+                for vote in pro_voting['result']:
+                    if vote['vote'] == 1:
+                        vote_yes += 1
 
-            for pro_voting in self.voting_data:
-                if pro_voting['pro_name'] != pro[1]:
-                    continue
-                if 'voting_status' in pro_voting.keys():
-                    if pro_voting['voting_status'] == 1:
-                        voting_status = "正在投票"
-                    elif pro_voting['voting_status'] == 2:
-                        voting_status = "完成投票"
-                if 'result' in pro_voting.keys():
-                    vote_count = len ( pro_voting['result'] )
-                    for vote in pro_voting['result']:
-                        if vote['vote'] == 1:
-                            vote_yes += 1
-                    break
+
             item = list()
-            item.append(i+1)
-            item.append(pro[1])
+            item.append(idx+1)
+            item.append(pro_names[idx])
             item.append(vote_yes)
             item.append(self.max_pro_num - vote_yes)
             #item.append(vote_count )
@@ -439,25 +659,10 @@ class VotingManager(object):
         ret = {}
         ret['method'] = 'dashboard'
 
-        ret['phd_list'] = []
-        phd_list = None
-        phd_count = 0
-        if self.phd_data != None:
-            if 0 in self.phd_data.keys():
-                phd_list = self.phd_data[0][1][2:]
-                phd_count = len(phd_list)
-        if phd_count > 0:
-            ret['phd_list'] = phd_list
+        ret['phd_list'] = self.phd_list.raw_data()
 
-        ret['pro_list'] = []
-        pro_list = None
-        pro_count = 0
-        if self.pro_data != None:
-            if 0 in self.pro_data.keys():
-                pro_list = self.pro_data[0][1][2:]
-                pro_count = len(pro_list)
-        if pro_count >0:
-            ret['pro_list'] = pro_list
+
+        ret['pro_list'] = self.pro_list.raw_data()
 
         #voting data
         ret["voting_status"] = self.voting_status
@@ -469,16 +674,7 @@ class VotingManager(object):
 
         return ret
     def get_phd_list(self):
-        phd_list = None
-        phd_count = 0
-        if self.phd_data != None:
-            if 0 in self.phd_data.keys():
-                phd_list = self.phd_data[0][1][2:]
-                phd_count = len(phd_list)
-        if phd_count > 0:
-            return phd_list
-        else:
-            return []
+        return self.phd_list.raw_data()
 
     def gen_voting(self):
         ret = {}
@@ -493,96 +689,80 @@ class VotingManager(object):
 
     def finish_vote(self, msg):
         pro_name = msg.get('pro_name')
+        user_name = msg.get('user_name')
         if self.voting_status != 1:
-            return {'type':'error','error':'投票未开始'}
+            return {'method':'votingman', 'type':'error', 'error':'投票未开始'}
 
-        find_pro = False
-        for pro in self.voting_data:
-            if pro['pro_name'] != pro_name:
-                continue
-            pro['voting_status'] = 2 #停止投票
-            break
-        return {
-            "method":"votingman",
-            "type":"success"
-        }
+        try:
+            if user_name[:2] == '专家':
+                user_pos = int(user_name[2:]) -1
+                self.voting_data[user_pos]['voting_status'] = 2  #停止投票
+            else:
+                for pro in self.voting_data:
+                    if pro['pro_name'] == pro_name:
+                        pro['voting_status'] = 2  #停止投票
+            return {"method":"votingman", "type":"success"}
+        except Exception as e:
+            print(e)
+            return {'method':'votingman', 'type':'error', 'error':str(e)}
+
+
 
     def update_vote(self, msg):
         pro_name = msg.get('pro_name')
+        user_name = msg.get('user_name')
         phd_name = msg.get('phd_name')
+        phd_id = msg.get('phd_id')
         vote = int(msg.get('vote'))
 
+        # 判断项目投票状态
         if self.voting_status != 1:
-            return {'type':'error', 'error':'投票未开始'}
+            return {'method':'votingman', 'type':'error', 'error':'投票未开始'}
 
-        find=False
-        for pro in self.voting_data:
-            if pro['pro_name'] != pro_name:
-                continue
-            find = True
-            if 'voting_status' in pro.keys():
-                if pro['voting_status'] == 2:
-                    return {'type':'error', 'error':'投票已经完成'}
-            pro['voting_status'] = 1 #正在投票
-            if 'result' not in pro.keys():
-                pro['result']=[]
-            result=pro['result']
-            find_result = False
-            vote_yes_count = 0
-            for item in result:
-                if item['vote'] == 1:
-                    vote_yes_count += 1
-            if vote_yes_count == self.max_pro_num and vote == 1:
-                return {'type':'error', 'error':'你已经达到本次项目赞成票最大值，无法继续投赞成票'}
-            for item in result:
-                if  item['phd_name'] == phd_name:
-                    find_result = True
-                    item['vote'] = vote
-                    break
-            if not find_result:
-                item ={}
-                item['phd_name'] = phd_name
-                item['vote'] = vote
-                result.append(item)
-            break
-        if not find:
-            pro={}
-            pro['pro_name'] = pro_name
-            pro['voting_status'] = 1 #正在投票
-            result=[]
-            item ={}
-            item['phd_name'] = phd_name
-            item['vote'] = vote
-            result.append(item)
-            pro['result'] = result
-            self.voting_data.append(pro)
-        return {
-            "method":"votingman",
-            "type":"success"
-        }
+        # 判断输入
+        phd_pos = phd_id.rfind('_index')
+        if user_name[:2] != '专家' or phd_pos < 0:
+            return {'method':'votingman', 'type':'error', 'error':'投票数据错误，请重新登录'}
+
+        # 判断专家状态
+        user_pos = int(user_name[2:]) -1
+        pro = self.voting_data[user_pos]
+        if pro['voting_status'] == 2:
+            return {'method':'votingman', 'type':'error', 'error':'投票已经完成'}
+
+        # 判读最大赞成票
+        vote_yes_count = 0
+        for item in pro['result']:
+            if item['vote'] == 1:
+                vote_yes_count += 1
+        if vote_yes_count >= self.max_pro_num and vote == 1:
+            return {'method':'votingman', 'type':'error', 'error':'你已经达到本次项目赞成票最大值，无法继续投赞成票'}
+
+        # 正在投票
+        pro['voting_status'] = 1
+
+        # 更新投票结果
+        phd_idx = int(phd_id[phd_pos+len('_index'):])
+        pro['result'][phd_idx]['vote'] = vote
+
+        return {'method':'votingman', 'type':'success'}
 
     def check_pro(self, user_name, user_id):
-        if self.pro_data == None:
-            return False
-        pro_list = list()
-        pro_count = 0
-        if 0 in self.pro_data.keys():
-            pro_list = self.pro_data[0][1][2:]
-            pro_count = len(pro_list)
-            if pro_count == 0:
-                return False
-            if len(pro_list[0]) < 13:
-                return False
+        pro_names = self.pro_list.name
+        pro_ids = self.pro_list.id
         user_pos = -1
         if user_name[:2] == '专家':
-            user_pos = int(user_name[2:]) -1
-        print('check_pro', user_name, user_pos, user_id)
-        for i in range(pro_count):
-            pro = pro_list[i]
-            print(i, pro[1], pro[12])
-            if user_pos == i and pro[12] == user_id:
-                return True
-            if pro[1] == user_name and pro[12] == user_id:
-                #print('check pro success',user_name)
-                return True
+            try:
+                user_pos = int(user_name[2:]) -1
+                print('check_pro', user_name, user_pos, user_id)
+                if len(pro_ids) > user_pos:
+                    if pro_ids[user_pos] == user_id:
+                        return True
+            except Exception as e:
+                print(e)
+        else:
+            for idx in range(len(pro_names)):
+                if pro_names[idx] == user_name and pro_ids[idx] == user_id:
+                    #print('check pro success',user_name)
+                    return True
         return False

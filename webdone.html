@@ -1,0 +1,29 @@
+$def with (*a, **kw)
+$#var bodyattr= 'class="m4-cloak h-vh-100"'
+$var extrajs = ['assert/js/webdone.js']
+
+<div class="app-bar pos-relative z-dropdown bg-darkCyan" data-role="appbar" data-expand-point="md">
+    <a href="#" class="brand no-hover border bd-cyan bg-white" id="voting_logo">
+        <img src="assert/img/pku.png" width="64">
+    </a>
+    <div class="app-bar-item ml-auto">
+        <h2 class="text-light m-0 fg-white" style="line-height: 52px">北京大学博雅博士后项目投票系统</h2>
+    </div>
+
+    <a href="#" class="app-bar-item ml-auto">
+        <span id="voting_pro_name" class="fg-white"></span>
+    </a>
+</div>
+
+
+<div class="dialog mx-auto mt-4 mb-4 alert text-center" style="position: static; width: 480px;">
+    <div class="dialog-title">投票状态</div>
+    <div class="dialog-content">
+        <h4 class="fg-green">票赞成</h4>
+        <h4 class="fg-red">票反对</h4>
+        <h4 class="fg-orange">票剩余</h4>
+    </div>
+    <div class="dialog-actions">
+        <button class="button"><a href="logout.html"> 退出登录 </a></button>
+    </div>
+</div>

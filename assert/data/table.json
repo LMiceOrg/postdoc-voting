@@ -16,14 +16,14 @@
     },
     {
       "name": "vote_done",
-      "title": "已投票数量",
+      "title": "已投赞成票数量",
       "sortable": true,
       "size": 150,
       "show": true
     },
     {
       "name": "vote_notyet",
-      "title": "未投票数量",
+      "title": "剩余赞成票数量",
       "sortable": true,
       "size": 150,
       "show": true
