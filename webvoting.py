@@ -67,13 +67,15 @@ loops = dict()
 
 def trace_error(fn, *args, **kw):
     def wrapped(*args, **kw):
+        s = ""
         try:
             print(threading.current_thread().name, threading.current_thread().ident)
             s = fn(*args, **kw)
-            s = str(s).replace('href="/', 'href="/').replace('src="/', 'src="/')
-            return s
         except:
-            return traceback.format_exc()
+            s = traceback.format_exc()
+        sys.stderr.flush()
+        sys.stdout.flush()
+        return str(s)
     return wrapped
 
 def check_auth(fn, *args, **kw):

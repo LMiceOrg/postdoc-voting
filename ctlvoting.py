@@ -88,6 +88,8 @@ async def recv_msg(ws):
             traceback.print_exc()
             ret = {'type':'error'}
             await ws.send(json.dumps(ret))
+        sys.stdout.flush()
+        sys.stderr.flush()
 
 async def main_logic(websocket, path):
     try:
