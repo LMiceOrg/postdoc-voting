@@ -1,0 +1,38 @@
+.navview.navview-expand-sm  .navview-pane {
+    width: 38%;
+}
+
+.navview.navview-expand-sm .navview-content {
+    margin-left: 38%;
+}
+
+.navview .navview-menu li,
+.navview .navview-menu li.active::before,
+.navview .navview-menu li a,
+.navview .navview-menu li.item-header,
+.navview .navview-menu .icon {
+    top:0;
+    line-height:60px;
+    height: 60px;
+    vertical-align: middle;
+}
+
+.navview .navview-menu .item-separator {
+    height:0px !important;
+    line-height: 0px;
+}
+
+.navview .navview-menu .caption {
+    margin-left:3px;
+}
+
+.navview .navview-menu  span.icon input[type = checkbox]
+{
+    zoom: 160%;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
+.navview.compacted span.icon input[type = checkbox] {
+    display: none;
+}
