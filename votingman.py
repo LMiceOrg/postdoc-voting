@@ -432,12 +432,14 @@ class VotingManager(object):
 
         phd_keys = self.phd_list.key
         phd_names = self.phd_list.name
+        phd_college = self.phd_list.college
 
         for idx in range(phd_count):
             # yes, no, name, key
             name = phd_names[idx]
             key = phd_keys[idx]
-            phd_result.append([0, 0, name, key])
+            college = phd_college[idx]
+            phd_result.append([0, 0, name, key, college])
 
         for pro_voting in self.voting_data:
             if 'result' not in pro_voting:
@@ -459,6 +461,35 @@ class VotingManager(object):
         print('phd_result', phd_result)
         sort_key = lambda e:e[0]
         phd_result.sort(key=sort_key, reverse=True)
+
+        # 2021-04-22 修改
+        vote_pass=[]
+        vote_block=[]
+        vote_pass_idx = 0
+        vote_block_idx = 0
+        for idx in range(phd_count):
+            vote_yes_result = phd_result[idx][0]
+
+            # 投票率是否过半
+            if vote_yes_result*2 >= pro_count:
+                # 插入 表1
+                item=dict(t1_id= str(vote_pass_idx+1),
+                    t1_name= str(phd_result[idx][2]),
+                    t1_yes=str(phd_result[idx][0]),
+                    t1_no= str(phd_result[idx][1]),
+                    t1_org = str(phd_result[idx][4]))
+                vote_pass.append(item)
+                vote_pass_idx += 1
+            else:
+                # 插入 表2
+                item=dict(t2_id= str(vote_block_idx+1),
+                    t2_name= str(phd_result[idx][2]),
+                    t2_yes=str(phd_result[idx][0]),
+                    t2_no= str(phd_result[idx][1]),
+                    t2_org = str(phd_result[idx][4]))
+                vote_block.append(item)
+                vote_block_idx += 1
+
 
         result_count = phd_count
         if self.max_pro_num < phd_count:
@@ -543,11 +574,13 @@ class VotingManager(object):
         with MailMerge(doc_temp) as document:
             #print(document.get_merge_fields())
             document.merge(**ret)
-            document.merge_rows('t1_id', voting_result)
-            document.merge_rows('t2_id', voting_remain)
-            document.merge_rows('t3_id', voting_remain50)
-            #document.merge_rows('t2_id', t2)
-            #document.merge_rows('t3_id', t3)
+            document.merge_rows('t1_id', vote_pass)
+            document.merge_rows('t2_id', vote_block)
+
+            #document.merge_rows('t1_id', voting_result)
+            #document.merge_rows('t2_id', voting_remain)
+            #document.merge_rows('t3_id', voting_remain50)
+
             document.write(name1)
 
         name2 = name+'-公示.doc'
